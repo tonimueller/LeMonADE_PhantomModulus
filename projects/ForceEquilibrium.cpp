@@ -48,7 +48,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <LeMonADE_PM/updater/UpdaterForceBalancedPosition.h>
 #include <LeMonADE_PM/updater/UpdaterReadCrosslinkConnections.h>
-#include <LeMonADE_PM/feature/FeatureForceEquilibrium.h>
+#include <LeMonADE_PM/feature/FeatureCrosslinkConnectionsLookUp.h>
 #include <LeMonADE_PM/analyzer/AnalyzerEquilbratedPosition.h>
 
 
@@ -112,7 +112,7 @@ int main(int argc, char* argv[]){
 		taskmanager.cleanup();
 		std::cout << "Read in conformation and go on to bring it into equilibrium forces..." <<std::endl;
 		//the foce equilibrium is reached off lattice ( no integer values for the positions )
-		typedef LOKI_TYPELIST_3(FeatureBox, FeatureForceEquilibrium ,FeatureSystemInformationLinearMeltWithCrosslinker) Features2;
+		typedef LOKI_TYPELIST_3(FeatureBox, FeatureCrosslinkConnectionsLookUp ,FeatureSystemInformationLinearMeltWithCrosslinker) Features2;
 		typedef ConfigureSystem<VectorDouble3,Features2, 7> Config2;
 		typedef Ingredients<Config2> Ing2;
 		Ing2 myIngredients2;

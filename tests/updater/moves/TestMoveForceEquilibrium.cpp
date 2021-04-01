@@ -32,7 +32,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE/core/Molecules.h>
 #include <LeMonADE/core/Ingredients.h>
 #include <LeMonADE/feature/FeatureBox.h>
-
+#include <LeMonADE/utility/Vector3D.h>
 
 #include <extern/catch.hpp>
 
@@ -44,15 +44,15 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 TEST_CASE( "Test class MoveForceEquilibrium" ) 
 {
     typedef LOKI_TYPELIST_2(FeatureBox, FeatureCrosslinkConnectionsLookUp ) Features;
-    typedef ConfigureSystem<VectorInt3,Features> Config;
+    typedef ConfigureSystem<VectorDouble3,Features,4> Config;
     typedef Ingredients<Config> IngredientsType;
 
   
     std::streambuf* originalBuffer;
     std::ostringstream tempStream;
     //redirect stdout 
-    originalBuffer=std::cout.rdbuf();
-    std::cout.rdbuf(tempStream.rdbuf());
+    // originalBuffer=std::cout.rdbuf();
+    // std::cout.rdbuf(tempStream.rdbuf());
   
     SECTION(" Test if the labels are moved ","[MoveForceEquilibrium]")
     {
@@ -65,30 +65,68 @@ TEST_CASE( "Test class MoveForceEquilibrium" )
         ingredients.setPeriodicX(1);
         ingredients.setPeriodicY(1);
         ingredients.setPeriodicZ(1);
-        ingredients.modifyBondset().addBFMclassicBondset();
+        // ingredients.modifyBondset().addBFMclassicBondset();
         //define 
-        ingredients.modifyMolecules().addMonomer(6,6,6);
-        ingredients.modifyMolecules().addMonomer(6,4,6);
-        ingredients.modifyMolecules().addMonomer(6,8,6);
-        ingredients.modifyMolecules().addMonomer(4,6,6);
-        ingredients.modifyMolecules().addMonomer(8,6,6);
-        for (auto i=0; i < ingredients.getMolecules().size()-1; i++)
-            ingredients.modifyMolecules().connect(i,i+1);
+        ingredients.modifyMolecules().addMonomer(6.,6.,6.);
+        ingredients.modifyMolecules().addMonomer(6.,4.,6.);
+        ingredients.modifyMolecules().addMonomer(6.,8.,6.);
+        ingredients.modifyMolecules().addMonomer(4.,6.,6.);
+        ingredients.modifyMolecules().addMonomer(8.,6.,6.);
+        
 
-        REQUIRE(ingredients.getMolecules().size()==5 );
+        ingredients.modifyMolecules().connect(0,1);
+        ingredients.modifyMolecules().connect(0,2);
+        ingredients.modifyMolecules().connect(0,3);
+        ingredients.modifyMolecules().connect(0,4);
+
+        ingredients.modifyMolecules().addMonomer(6.,4.,6.);
+        ingredients.modifyMolecules().addMonomer(6.,4.,6.);
+        ingredients.modifyMolecules().connect(1,5);
+        ingredients.modifyMolecules().connect(1,6);
+        ingredients.modifyMolecules().addMonomer(6.,8.,6.);
+        ingredients.modifyMolecules().addMonomer(6.,8.,6.);
+        ingredients.modifyMolecules().connect(2,7);
+        ingredients.modifyMolecules().connect(2,8);
+
+
+        ingredients.modifyMolecules().addMonomer(4.,6.,6.);
+        ingredients.modifyMolecules().addMonomer(4.,6.,6.);
+        ingredients.modifyMolecules().connect(3,9);
+        ingredients.modifyMolecules().connect(3,10);
+        ingredients.modifyMolecules().addMonomer(8.,6.,6.);
+        ingredients.modifyMolecules().addMonomer(8.,6.,6.);
+        ingredients.modifyMolecules().connect(4,11);
+        ingredients.modifyMolecules().connect(4,12);
+
+        REQUIRE(ingredients.getMolecules().size()==13 );
         REQUIRE_NOTHROW(ingredients.synchronize(ingredients));
         //check some basics
         MoveForceEquilibrium move;
-        move.init(ingredients);
-        REQUIRE(move.getIndex()<5);
-        move.init(ingredients,0);
-        REQUIRE(move.getShiftVector()==VectorDouble3D(0.,0.,0.,));
 
-        ingredients.modifyMolecules()[0].setAllCoordinates(6,6,8);
-        REQUIRE(move.getShiftVector()==VectorDouble3D(0.,0.,-2.,));
+        move.init(ingredients,0);
+        REQUIRE(move.getShiftVector()==VectorDouble3(0.,0.,0.));
+        REQUIRE_NOTHROW(ingredients.synchronize(ingredients));
+        ingredients.modifyMolecules()[0].setAllCoordinates(6.,6.,8.);
+        move.init(ingredients,0);
+        auto vec=move.getShiftVector();
+        REQUIRE(vec.getY() == 0 );
+        REQUIRE(vec.getX() == 0 );
+        REQUIRE(vec.getZ() == Approx(-1.) );
+        ingredients.modifyMolecules()[0].setAllCoordinates(12.,17.,3.);
+        for (auto i=0; i < 100; i++){
+            move.init(ingredients,0);
+            move.check(ingredients);
+            move.apply(ingredients);
+        }
+        auto vec2=ingredients.modifyMolecules()[0].getVector3D();
+        REQUIRE(vec2.getX() == Approx(6.));
+        REQUIRE(vec2.getY() == Approx(6.));
+        REQUIRE(vec2.getZ() == Approx(6.));
+        
         // move.check(ingredients);
     }
     //restore cout 
-    std::cout.rdbuf(originalBuffer);
+    // std::cout.rdbuf(originalBuffer);
 
 }
+

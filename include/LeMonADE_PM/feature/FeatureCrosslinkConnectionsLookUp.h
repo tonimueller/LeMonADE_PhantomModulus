@@ -81,40 +81,40 @@ public:
 		return CrossLinkNeighbors.at(CrossLinkID);
 	};
 
-	std::vector<neighborX >& modifyCrossLinkNeighborIDs(uint32_t CrossLinkID) const{
-		return CrossLinkNeighbors[CrossLinkID];
-	};
+	// std::vector<neighborX >& modifyCrossLinkNeighborIDs(uint32_t CrossLinkID) const{
+	// 	return CrossLinkNeighbors[CrossLinkID];
+	// };
 
 private:
   //! convinience function to fill all tables 
   template<class IngredientsType>
   void fillTables(IngredientsType& ingredients);
   //!key - CrossLink ID; value - neighboring cross link and the number of segments to them
-  std::map<uint32_t,std::vector<neighborX > CrossLinkNeighbors;
+  std::map<uint32_t,std::vector< neighborX > > CrossLinkNeighbors;
 };
 /**
  *@details  Create look up table 
  **/
 template<class IngredientsType>
 void FeatureCrosslinkConnectionsLookUp::fillTables(IngredientsType& ingredients){
-	const typename IngredientsType::moleculesType& molecules=ingredients.getMolecules();
+	const typename IngredientsType::molecules_type& molecules=ingredients.getMolecules();
 	std::cout << "FeatureCrosslinkConnectionsLookUp::fillTables" <<std::endl;
 	for (uint32_t i = 0 ;i < molecules.size();i++){
 			//find next crosslink
-			if( molecules[i].getNumLinks() > 2 ){
+			if( molecules.getNumLinks(i) > 2 ){
 				//temporary storage for the neighboring crosslinks
 				std::vector<neighborX> NeighborIDs;
 				auto posX(molecules[i].getVector3D());
 				for (size_t j = 0 ; j < molecules.getNumLinks(i); j++){
 					uint32_t tail(i);
 					uint32_t head(molecules.getNeighborIdx(i,j));
-					auto posHead(molecules.getVector3D[head]);
+					auto posHead(molecules[head].getVector3D());
 					auto bond(LemonadeDistCalcs::MinImageVector( posX,posHead,ingredients));
 					auto jumpVector(posHead-bond-posX); // tracks if one bond jumps across periodic images 
 					//direct connection of two cross links
-					if (molecules[head].getNumLinks() > 2) {
+					if (molecules.getNumLinks(head) > 2) {
 						NeighborIDs.push_back( neighborX(head, 1, jumpVector) );
-					}else 
+					}else{ 
 						uint32_t nSegments(1);
 						//cross links are connected by a chain 
 						while( molecules.getNumLinks(head) == 2 ){
@@ -127,16 +127,17 @@ void FeatureCrosslinkConnectionsLookUp::fillTables(IngredientsType& ingredients)
 									break;
 								}
 							}
-							posHead=molecules.getVector3D[head];
+							posHead=molecules[head].getVector3D();
 							bond=LemonadeDistCalcs::MinImageVector( posX,posHead,ingredients);
 							jumpVector+=(posHead-bond); // tracks if one bond jumps across periodic images 
 							nSegments++;
 							//a cross link has more than 2 connections
-							if (molecules[head].getNumLinks() > 2) {
+							if (molecules.getNumLinks(head) > 2) {
 								NeighborIDs.push_back(neighborX(head, nSegments, jumpVector));
 								break;
 							}
-						}	
+						}
+                    }	
 				}
 				CrossLinkNeighbors[i]=NeighborIDs;
 			}

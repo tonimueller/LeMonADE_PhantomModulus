@@ -66,8 +66,8 @@ private:
         return extensionVector*3./(std::sqrt(nSegs)*bondlength*bondlength);
     }
     //Gaussian extension force relation 
-    VectorDouble3 EF(VectorDouble3 force, uint32_t nSegs){
-        return force/3.*(std::sqrt(nSegs)*bondlength*bondlength);
+    VectorDouble3 EF(VectorDouble3 force, double nSegs){
+        return force/(-3.)*(std::sqrt(nSegs)*bondlength*bondlength);
     }
     
 
@@ -79,15 +79,21 @@ private:
         double avNSegments(0.);
         if (Neighbors.size() > 0) {
             VectorDouble3 Position(ing.getMolecules()[this->getIndex()].getVector3D());      
+                // std::cout << "CorssLinkPos=" << Position << std::endl;
             for (size_t i = 0; i < Neighbors.size(); i++){
                 VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D() -Neighbors[i].jump);
                 avNSegments+=1./Neighbors[i].segDistance;
                 force+=FE(vec,Neighbors[i].segDistance);
+                // std::cout << "Neighbors=" <<  Neighbors[i].ID<<" " << ing.getMolecules()[Neighbors[i].ID].getVector3D()<<" " << vec << " segs=" << Neighbors[i].segDistance << " force="<< force << std::endl;
+                
                 // shift+=LemonadeDistCalcs::MinImageVector(Position,static_cast<VectorDouble3>(ing.getMolecules()[Neighbors[i].first].getVector3D()),ing); 
             }
             // shift/=(1.*Neighbors.size());  
+            force/=(1.*Neighbors.size());  
         }
+        std::cout << "Force=" << force << " avN=" << avNSegments <<std::endl;
         VectorDouble3 shift=EF(force,1./avNSegments);
+        std::cout << "Force=" << force << " avN=" << avNSegments  << " " <<shift<<std::endl;
         return shift;
     };
 

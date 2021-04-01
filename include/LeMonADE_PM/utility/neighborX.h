@@ -34,13 +34,13 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 //periodic boundaries 
 struct neighborX{
     // neighborX(){};
-    // neighborX(uint32_t ID_, uint32_t segDistance_, VectorInt3 jump_):ID(ID_), segDistance(segDistance_), jump(jump_){};
+    neighborX(uint32_t ID_, uint32_t segDistance_, VectorDouble3 jump_):ID(ID_), segDistance(segDistance_), jump(jump_){};
     //id of the neighbor 
     uint32_t ID;
     //segmental distance between the neighbors 
     uint32_t segDistance;
     //jump vector across periodic boundaries  
-    VectorInt3 jump;
+    VectorDouble3 jump;
 };
 
 #endif /*LENONADE_PM_UTILITY_NEIGHBORX_H*/
