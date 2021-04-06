@@ -51,8 +51,8 @@ TEST_CASE( "Test class MoveForceEquilibrium" )
     std::streambuf* originalBuffer;
     std::ostringstream tempStream;
     //redirect stdout 
-    // originalBuffer=std::cout.rdbuf();
-    // std::cout.rdbuf(tempStream.rdbuf());
+    originalBuffer=std::cout.rdbuf();
+    std::cout.rdbuf(tempStream.rdbuf());
   
     SECTION(" Test if the labels are moved ","[MoveForceEquilibrium]")
     {
@@ -122,11 +122,9 @@ TEST_CASE( "Test class MoveForceEquilibrium" )
         REQUIRE(vec2.getX() == Approx(6.));
         REQUIRE(vec2.getY() == Approx(6.));
         REQUIRE(vec2.getZ() == Approx(6.));
-        
-        // move.check(ingredients);
     }
     //restore cout 
-    // std::cout.rdbuf(originalBuffer);
+    std::cout.rdbuf(originalBuffer);
 
 }
 
