@@ -98,6 +98,7 @@ TEST_CASE( "Test class FeatureCrosslinkConnectionsLookUp" )
         REQUIRE(ingredients.getMolecules().size()==13 );
         REQUIRE_NOTHROW(ingredients.synchronize(ingredients));
         auto neighbors(ingredients.getCrossLinkNeighborIDs(0));
+        REQUIRE(neighbors.size() == 4 ) ;
         REQUIRE(neighbors[0].ID == 1 ) ; 
         REQUIRE(neighbors[1].ID == 2 ) ;
         REQUIRE(neighbors[2].ID == 3 ) ;
@@ -113,20 +114,20 @@ TEST_CASE( "Test class FeatureCrosslinkConnectionsLookUp" )
         REQUIRE(jump.getZ() == Approx(0.) ); 
 
         neighbors=ingredients.getCrossLinkNeighborIDs(1);
-        REQUIRE(neighbors[0].ID == 0 ) ;
-        REQUIRE(neighbors[1].ID > 13 ) ;
+        REQUIRE(neighbors[0].ID ==  0 ) ;
+        REQUIRE(neighbors.size() == 1 ) ;
 
         neighbors=ingredients.getCrossLinkNeighborIDs(2);
         REQUIRE(neighbors[0].ID == 0 ) ;
-        REQUIRE(neighbors[1].ID > 13 ) ;
+        REQUIRE(neighbors.size() == 1 ) ;
 
         neighbors=ingredients.getCrossLinkNeighborIDs(3);
         REQUIRE(neighbors[0].ID == 0 ) ;
-        REQUIRE(neighbors[1].ID > 13 ) ;
+        REQUIRE(neighbors.size() == 1 ) ;
 
         neighbors=ingredients.getCrossLinkNeighborIDs(4);
         REQUIRE(neighbors[0].ID == 0 ) ;
-        REQUIRE(neighbors[1].ID > 13 ) ;
+        REQUIRE(neighbors.size() == 1 ) ;
 
         //check if the jumps are correctly calculated
         ingredients.modifyMolecules()[1].modifyVector3D()=( 

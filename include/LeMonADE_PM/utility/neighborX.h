@@ -33,10 +33,10 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 // and the jumps in multiples of the box sizes for connections across 
 //periodic boundaries 
 struct neighborX{
-    // neighborX(){};
-    neighborX(uint32_t ID_, uint32_t segDistance_, VectorDouble3 jump_):ID(ID_), segDistance(segDistance_), jump(jump_){};
+    neighborX():ID(-1), segDistance(0), jump(VectorDouble3(0.,0.,0.)){};
+    neighborX(int32_t ID_, uint32_t segDistance_, VectorDouble3 jump_):ID(ID_), segDistance(segDistance_), jump(jump_){};
     //id of the neighbor 
-    uint32_t ID;
+    int32_t ID;
     //segmental distance between the neighbors 
     uint32_t segDistance;
     //jump vector across periodic boundaries  
