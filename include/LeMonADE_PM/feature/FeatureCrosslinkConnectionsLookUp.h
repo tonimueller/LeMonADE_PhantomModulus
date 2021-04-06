@@ -81,9 +81,8 @@ public:
 		return CrossLinkNeighbors.at(CrossLinkID);
 	};
 
-	// std::vector<neighborX >& modifyCrossLinkNeighborIDs(uint32_t CrossLinkID) const{
-	// 	return CrossLinkNeighbors[CrossLinkID];
-	// };
+	//!get the ID of crosslinks (determined by nConnections>3 and connected to another crosslink)
+	const std::vector<uint32_t>& getCrosslinkIDs() const {return crosslinkIDs;}
 
 private:
   //! convinience function to fill all tables 
@@ -91,6 +90,8 @@ private:
   void fillTables(IngredientsType& ingredients);
   //!key - CrossLink ID; value - neighboring cross link and the number of segments to them
   std::map<uint32_t,std::vector< neighborX > > CrossLinkNeighbors;
+  //!ID for crosslinks
+  std::vector<uint32_t> crosslinkIDs;
 };
 /**
  *@details  Create look up table 
@@ -140,6 +141,8 @@ void FeatureCrosslinkConnectionsLookUp::fillTables(IngredientsType& ingredients)
 				}	
 			}
 			CrossLinkNeighbors[i]=NeighborIDs;
+			if(NeighborIDs.size()>0)
+				crosslinkIDs.push_back(i);
 		}
 	}
 	std::cout << "FeatureCrosslinkConnectionsLookUp::fillTables.done" <<std::endl; 

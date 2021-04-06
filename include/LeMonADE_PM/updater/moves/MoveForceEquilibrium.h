@@ -84,11 +84,7 @@ private:
                 VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D() -Neighbors[i].jump);
                 avNSegments+=1./Neighbors[i].segDistance;
                 force+=FE(vec,Neighbors[i].segDistance);
-                // std::cout << "Neighbors=" <<  Neighbors[i].ID<<" " << ing.getMolecules()[Neighbors[i].ID].getVector3D()<<" " << vec << " segs=" << Neighbors[i].segDistance << " force="<< force << std::endl;
-                
-                // shift+=LemonadeDistCalcs::MinImageVector(Position,static_cast<VectorDouble3>(ing.getMolecules()[Neighbors[i].first].getVector3D()),ing); 
             }
-            // shift/=(1.*Neighbors.size());  
             force/=(1.*Neighbors.size());  
         }
         std::cout << "Force=" << force << " avN=" << avNSegments <<std::endl;
