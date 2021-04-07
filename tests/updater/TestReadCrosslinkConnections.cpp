@@ -52,8 +52,8 @@ TEST_CASE( "Test class UpdaterReadCrosslinkConnections" )
     std::streambuf* originalBuffer;
     std::ostringstream tempStream;
     //redirect stdout 
-    // originalBuffer=std::cout.rdbuf();
-    // std::cout.rdbuf(tempStream.rdbuf());
+    originalBuffer=std::cout.rdbuf();
+    std::cout.rdbuf(tempStream.rdbuf());
   
     SECTION(" Test if the labels are moved ","[UpdaterReadCrosslinkConnections]")
     {
@@ -149,7 +149,7 @@ TEST_CASE( "Test class UpdaterReadCrosslinkConnections" )
 
     }
     //restore cout 
-    // std::cout.rdbuf(originalBuffer);
+    std::cout.rdbuf(originalBuffer);
 
 }
 

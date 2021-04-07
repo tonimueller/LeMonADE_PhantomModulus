@@ -48,8 +48,8 @@ TEST_CASE( "Test class FeatureCrosslinkConnectionsLookUp" )
     std::streambuf* originalBuffer;
     std::ostringstream tempStream;
     //redirect stdout 
-    // originalBuffer=std::cout.rdbuf();
-    // std::cout.rdbuf(tempStream.rdbuf());
+    originalBuffer=std::cout.rdbuf();
+    std::cout.rdbuf(tempStream.rdbuf());
   
     SECTION(" Test if feature stes up lookup correctly","[FeatureCrosslinkConnectionsLookUp]")
     {
@@ -140,7 +140,7 @@ TEST_CASE( "Test class FeatureCrosslinkConnectionsLookUp" )
         REQUIRE(jump.getZ() == Approx(-512.) ); 
     }
     //restore cout 
-    // std::cout.rdbuf(originalBuffer);
+    std::cout.rdbuf(originalBuffer);
 
 }
 
