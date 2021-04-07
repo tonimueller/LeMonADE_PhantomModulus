@@ -74,8 +74,8 @@ public:
 	std::vector< std::vector<double> >  CalculateDistance();
 	//! just collects the id and the position for the cross links 
 	std::vector<std::vector<double> > CollectAveragePositions();
-	//! returns the chain Id for a pair of cross links 
-	uint32_t getChainIDByPair(uint32_t MonID1, uint32_t MonID2) const ;
+	// //! returns the chain Id for a pair of cross links 
+	// uint32_t getChainIDByPair(uint32_t MonID1, uint32_t MonID2) const ;
 };
 
 /*************************************************************************
@@ -100,11 +100,11 @@ std::vector< std::vector<double> >  AnalyzerEquilbratedPosition<IngredientsType>
 	auto crosslinkID(ingredients.getCrosslinkIDs());
 	for (size_t i = 0 ; i < crosslinkID.size(); i++){
 		auto IDx(crosslinkID[i]);
-		std::vector<uint32_t> neighbors(ingredients.getCrossLinkNeighborIDs(IDx));
+		auto neighbors(ingredients.getCrossLinkNeighborIDs(IDx));
 		for (size_t j=0; j < neighbors.size() ;j++){
-			VectorDouble3 vec(ingredients.getMolecules()[IDx].getVector3D()-ing.getMolecules()[neighbors[j].ID].getVector3D() -neighbors[j].jump);
+			VectorDouble3 vec(ingredients.getMolecules()[IDx].getVector3D()-ingredients.getMolecules()[neighbors[j].ID].getVector3D() -neighbors[j].jump);
 			dist[0].push_back(IDx);
-			dist[1].push_back(neighbors[j]);
+			dist[1].push_back(neighbors[j].ID);
 			dist[2].push_back(vec.getX());
 			dist[3].push_back(vec.getY());
 			dist[4].push_back(vec.getZ());
@@ -130,16 +130,16 @@ std::vector< std::vector<double> >  AnalyzerEquilbratedPosition<IngredientsType>
 	return AveragePosition;
 }
 ////////////////////////////////////////////////////////////////////////////////
-template< class IngredientsType >
-uint32_t  AnalyzerEquilbratedPosition<IngredientsType>::getChainIDByPair(uint32_t MonID1, uint32_t MonID2) const {
-	std::pair<uint32_t, uint32_t> CrosslinkPair=std::make_pair(std::min( MonID1,MonID2),std::max( MonID1,MonID2));
-	if ( CrossLinkPairChainTable.find(CrosslinkPair) == CrossLinkPairChainTable.end()){
-		std::stringstream errormessage;
-		errormessage << "AnalyzerEquilbratedPosition::getChainIDByPair Cross link pair " << CrosslinkPair.first << " and " << CrosslinkPair.second  <<" does not exist.";
-		throw std::runtime_error(errormessage.str());	    
-	}
-	return CrossLinkPairChainTable.at( CrosslinkPair );
-}
+// template< class IngredientsType >
+// uint32_t  AnalyzerEquilbratedPosition<IngredientsType>::getChainIDByPair(uint32_t MonID1, uint32_t MonID2) const {
+// 	std::pair<uint32_t, uint32_t> CrosslinkPair=std::make_pair(std::min( MonID1,MonID2),std::max( MonID1,MonID2));
+// 	if ( CrossLinkPairChainTable.find(CrosslinkPair) == CrossLinkPairChainTable.end()){
+// 		std::stringstream errormessage;
+// 		errormessage << "AnalyzerEquilbratedPosition::getChainIDByPair Cross link pair " << CrosslinkPair.first << " and " << CrosslinkPair.second  <<" does not exist.";
+// 		throw std::runtime_error(errormessage.str());	    
+// 	}
+// 	return CrossLinkPairChainTable.at( CrosslinkPair );
+// }
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief calculates the average distances between monomers and their distribution 

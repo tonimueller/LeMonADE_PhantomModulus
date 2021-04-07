@@ -30,7 +30,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #define LENONADE_PM_FEATURE_FEATURECROSSLINKCONNECTIONLOOKUP_H
 
 #include <LeMonADE/feature/Feature.h>
-#include <LeMonADE/feature/FeatureConnectionSc.h>
+#include <LeMonADE/feature/FeatureReactiveBonds.h>
 #include <LeMonADE/updater/moves/MoveBase.h>
 #include <LeMonADE/utility/Vector3D.h>
 #include <LeMonADE_PM/updater/moves/MoveForceEquilibrium.h>
@@ -59,6 +59,8 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 class FeatureCrosslinkConnectionsLookUp : public Feature {
   
 public:
+  	//! This Feature requires a monomer_extensions.
+	typedef LOKI_TYPELIST_1(MonomerReactivity) monomer_extensions;
 
 	//! check bas connect move - always true 
 	template<class IngredientsType>
@@ -72,8 +74,7 @@ public:
 
 	//!getter function for the neighboring crosslinks
 	std::vector<neighborX> getCrossLinkNeighborIDs(uint32_t CrossLinkID) const{
-		if (CrossLinkNeighbors.find(CrossLinkID) == CrossLinkNeighbors.end())
-		{
+		if (CrossLinkNeighbors.find(CrossLinkID) == CrossLinkNeighbors.end()){
 			std::stringstream errormessage;
 			errormessage << "FeatureCrosslinkConnectionsLookUp::getCrossLinkNeighborIDs Cross Link ID " << CrossLinkID <<" does not exist.";
 			throw std::runtime_error(errormessage.str());

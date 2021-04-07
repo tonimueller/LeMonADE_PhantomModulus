@@ -76,15 +76,14 @@ bool UpdaterForceBalancedPosition<IngredientsType>::execute(){
             uint32_t RandomMonomer(CrossLinkIDs[ rng.r250_rand32() % NCrossLinks]);
             move.init(ing, RandomMonomer);
             if(move.check(ing)){
-              move.apply(ing);
-              std::cout <<  RandomMonomer << std::endl;
-              avShift+=move.getShiftVector().getLength();
-              NSuccessfulMoves++;
+                move.apply(ing);
+                avShift+=move.getShiftVector().getLength();
+                NSuccessfulMoves++;
             }
         }
-        if( NSuccessfulMoves>0 )
+        if( NSuccessfulMoves>0 ){
             avShift/=(NSuccessfulMoves);
-        else 
+        }else 
             avShift=threshold*1.1;
         ing.modifyMolecules().setAge(ing.getMolecules().getAge()+1);
         std::cout << "MCS: " << ing.getMolecules().getAge() << "  and average shift: " << avShift<< std::endl;

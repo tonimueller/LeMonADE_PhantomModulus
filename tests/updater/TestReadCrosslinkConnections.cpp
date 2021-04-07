@@ -128,10 +128,10 @@ TEST_CASE( "Test class UpdaterReadCrosslinkConnections" )
         REQUIRE_NOTHROW(ingredients.synchronize(ingredients));
         UpdaterReadCrosslinkConnections<IngredientsType> updater(ingredients, filename, 1., 0.00);
         updater.initialize();
-        for(auto i =0; i < 5 ; i++)
+        for(auto i =0; i < 10 ; i++)
             updater.execute();
         REQUIRE(ingredients.getMolecules().areConnected(12,0) );
-        for(auto i =0; i < 5 ; i++)
+        for(auto i =0; i < 10 ; i++)
             updater.execute();
         REQUIRE(ingredients.getMolecules().areConnected(0,13) );
         

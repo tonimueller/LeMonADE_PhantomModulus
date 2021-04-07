@@ -125,11 +125,11 @@ int main(int argc, char* argv[]){
 		myIngredients2.setPeriodicZ(myIngredients.isPeriodicZ());
 		myIngredients2.modifyMolecules().resize(myIngredients.getMolecules().size());
 		myIngredients2.modifyMolecules().setAge(myIngredients.getMolecules().getAge());
-		myIngredients2.setNumberofChains       (myIngredients.getNumberofChains());
-		myIngredients2.setNumberofCrossLinkers (myIngredients.getNumberofCrossLinkers());
-		myIngredients2.setChainLength          (myIngredients.getChainLength());
-		myIngredients2.setFunctionality        (myIngredients.getFunctionality());
-		myIngredients2.setNMonomersPerCrossLink(myIngredients.getNMonomersPerCrossLink());
+		myIngredients2.setNumOfChains              (myIngredients.getNumOfChains());
+		myIngredients2.setNumOfCrosslinks          (myIngredients.getNumOfCrosslinks());
+		myIngredients2.setNumOfMonomersPerChain    (myIngredients.getNumOfMonomersPerChain());
+		myIngredients2.setNumOfMonomersPerCrosslink(myIngredients.getNumOfMonomersPerCrosslink());
+		myIngredients2.setFunctionality            (myIngredients.getFunctionality());
 		
 		for(size_t i = 0; i< myIngredients.getMolecules().size();i++){
 			myIngredients2.modifyMolecules()[i].modifyVector3D()=myIngredients.getMolecules()[i].getVector3D();
@@ -155,7 +155,7 @@ int main(int argc, char* argv[]){
 		//read bonds and positions stepwise
 		taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
 		taskmanager2.addUpdater( new UpdaterForceBalancedPosition<Ing2>(myIngredients2, threshold) );
-		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
+		// taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
 		//initialize and run
 		taskmanager2.initialize();
 		taskmanager2.run();

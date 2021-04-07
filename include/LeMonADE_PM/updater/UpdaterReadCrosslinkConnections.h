@@ -121,7 +121,7 @@ void UpdaterReadCrosslinkConnections<IngredientsType>::ConnectCrossLinkToChain(u
 template <class IngredientsType>
 void UpdaterReadCrosslinkConnections<IngredientsType>::initialize(){
     //assume a stochiometric mixture
-    NMaxConnection=ing.getFunctionality()*ing.getNumOfCrosslinks()*2;
+    NMaxConnection=ing.getFunctionality()*ing.getNumOfCrosslinks();
     NMonomerPerChain = ing.getNumOfMonomersPerChain();
     std::cout << "Number of maximum connection: " << NMaxConnection << std::endl;
 }
@@ -152,7 +152,7 @@ bool UpdaterReadCrosslinkConnections<IngredientsType>::execute(){
             throw std::runtime_error("Wrong input format!");
     }
     //current conversion 
-    auto conversion = minConversion + static_cast<double>(nExecutions) * stepwidth / 100.;
+    auto conversion = minConversion + static_cast<double>(nExecutions) * stepwidth;
     std::cout << "Current conversion is " <<conversion <<std::endl;
     //read in number of lines to reach the current conversion 
     //(always start from the initial state and thus read in connectiosn from the beginning)

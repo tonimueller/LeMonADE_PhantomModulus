@@ -87,9 +87,9 @@ private:
             }
             force/=(1.*Neighbors.size());  
         }
-        std::cout << "Force=" << force << " avN=" << avNSegments <<std::endl;
+        // std::cout << "Force=" << force << " avN=" << avNSegments <<std::endl;
         VectorDouble3 shift=EF(force,1./avNSegments);
-        std::cout << "Force=" << force << " avN=" << avNSegments  << " " <<shift<<std::endl;
+        // std::cout << "Force=" << force << " avN=" << avNSegments  << " " <<shift<<std::endl;
         return shift;
     };
 
