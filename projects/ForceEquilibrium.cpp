@@ -141,16 +141,8 @@ int main(int argc, char* argv[]){
 				myIngredients2.modifyMolecules().connect(i,neighbor);
 			}
 		}
-		//erase bonds between reactive monomers
-		for (size_t i =0 ; i <  myIngredients2.getMolecules().size(); i++)
-			if (myIngredients2.getMolecules()[i].isReactive() )
-				for(size_t j=0; j < myIngredients2.getMolecules().getNumLinks(i);j++){
-				uint32_t neighbor(myIngredients2.getMolecules().getNeighborIdx(i,j));
-				if (myIngredients2.getMolecules()[neighbor].isReactive())
-					myIngredients2.modifyMolecules().disconnect(i, neighbor );
-				}
 		myIngredients2.synchronize();
-		
+
 		TaskManager taskmanager2;
 		//read bonds and positions stepwise
 		taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
@@ -158,7 +150,7 @@ int main(int argc, char* argv[]){
 		// taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
 		//initialize and run
 		taskmanager2.initialize();
-		taskmanager2.run();
+		taskmanager2.run(1);
 		taskmanager2.cleanup();
 		
 	}

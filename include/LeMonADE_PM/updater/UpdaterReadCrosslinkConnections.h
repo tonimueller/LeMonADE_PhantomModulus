@@ -30,7 +30,9 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <vector>
 #include <math.h>
+#include <algorithm>
 #include <LeMonADE/updater/AbstractUpdater.h>
+#include <LeMonADE/utility/DistanceCalculation.h>
 
 /**
  * @class UpdaterReadCrosslinkConnections
@@ -91,26 +93,19 @@ private:
   //! connects the cross link to the chain
   void ConnectCrossLinkToChain(uint32_t MonID, uint32_t chainID);
   
+  //!bond Table 
+  std::map<std::pair<uint32_t,uint32_t>,uint32_t> bondTable;
 };
 
 
 template <class IngredientsType>
 void UpdaterReadCrosslinkConnections<IngredientsType>::ConnectCrossLinkToChain(uint32_t MonID, uint32_t chainID){
-    uint32_t ChainMonomer1((chainID - 1) * NMonomerPerChain);
-    uint32_t ChainMonomer2((chainID)*NMonomerPerChain - 1);
-    if (!ing.getMolecules().areConnected(MonID, ChainMonomer1) && ing.getMolecules().getNumLinks(ChainMonomer1) < 2)
-      ing.modifyMolecules().connect(MonID, ChainMonomer1);
-    else if (!ing.getMolecules().areConnected(MonID, ChainMonomer2) && ing.getMolecules().getNumLinks(ChainMonomer2) < 2)
-       ing.modifyMolecules().connect(MonID, ChainMonomer2);
+    std::pair<uint32_t,uint32_t> key(MonID,chainID-1);
+    if (bondTable.find(key) != bondTable.end())
+        ing.modifyMolecules().connect(MonID,bondTable.at(key));
     else{
         std::stringstream errormessage;
-        for (uint32_t i = 0; i < ing.getMolecules().getNumLinks(ChainMonomer1); i++)
-          std::cout << "NeighborID  " << ing.getMolecules().getNeighborIdx(ChainMonomer1, i) << " for ChainMonomer1 " << ChainMonomer1 << std::endl;
-        for (uint32_t i = 0; i < ing.getMolecules().getNumLinks(ChainMonomer2); i++)
-          std::cout << "NeighborID  " << ing.getMolecules().getNeighborIdx(ChainMonomer2, i) << " for ChainMonomer2 " << ChainMonomer2 << std::endl;
-        errormessage << "Wrong monomer ID 1 for connection of cross link " << MonID << " with chain  " << ChainMonomer1 << "\n";
-        errormessage << "Wrong monomer ID 2 for connection of cross link " << MonID << " with chain  " << ChainMonomer2 << "\n";
-        errormessage << "for chain ID " << chainID << "\n";
+        errormessage << "There was no such a connection in the bfm file for monomer ID= " << MonID << " with chainID=" << chainID-1<< "\n";
         throw std::runtime_error(errormessage.str());
     }
 }
@@ -124,6 +119,18 @@ void UpdaterReadCrosslinkConnections<IngredientsType>::initialize(){
     NMaxConnection=ing.getFunctionality()*ing.getNumOfCrosslinks();
     NMonomerPerChain = ing.getNumOfMonomersPerChain();
     std::cout << "Number of maximum connection: " << NMaxConnection << std::endl;
+    //erase bonds between reactive monomers
+    for (uint32_t i =0 ; i <  ing.getMolecules().size(); i++)
+        if (ing.getMolecules()[i].isReactive() )
+            for(size_t j=0; j < ing.getMolecules().getNumLinks(i);j++){
+                uint32_t neighbor(ing.getMolecules().getNeighborIdx(i,j));
+                if (ing.getMolecules()[neighbor].isReactive()){
+                    ing.modifyMolecules().disconnect(i, neighbor );
+                    uint32_t chainMonomer(std::min(i,neighbor) );
+                    uint32_t chainID( (chainMonomer-chainMonomer%NMonomerPerChain)/NMonomerPerChain);
+                    bondTable[std::pair<uint32_t,uint32_t>(std::max(i,neighbor),chainID) ]=std::min(i,neighbor) ;
+                }
+            }
 }
 /**
  * @brief read in connections up tp the next step 
@@ -173,10 +180,10 @@ bool UpdaterReadCrosslinkConnections<IngredientsType>::execute(){
         //           << MonID1<< " " << P1X << " " << P1Y << " " << P1Z << " " 
         //           << MonID2<< " " << P2X << " " << P2Y << " " << P2Z << "\n";
         ing.modifyMolecules().setAge(Time);
-        ing.modifyMolecules()[MonID1].modifyVector3D().setAllCoordinates(P1X, P1Y, P1Z);
+        // ing.modifyMolecules()[MonID1].modifyVector3D().setAllCoordinates(P1X, P1Y, P1Z);
         ConnectCrossLinkToChain(MonID1, ChainID);
-        if (MonID2 > 0)
-            ing.modifyMolecules()[MonID2].modifyVector3D().setAllCoordinates(P2X, P2Y, P2Z);
+        // if (MonID2 > 0)
+            // ing.modifyMolecules()[MonID2].modifyVector3D().setAllCoordinates(P2X, P2Y, P2Z);
         NewConnections++;
     }
     std::cout << "Read and add " << NewConnections << "/" << NMaxConnection 

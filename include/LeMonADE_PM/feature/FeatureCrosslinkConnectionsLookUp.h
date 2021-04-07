@@ -103,16 +103,22 @@ void FeatureCrosslinkConnectionsLookUp::fillTables(IngredientsType& ingredients)
 	std::cout << "FeatureCrosslinkConnectionsLookUp::fillTables" <<std::endl;
 	for (uint32_t i = 0 ;i < molecules.size();i++){
 		//find next crosslink
-		if( molecules.getNumLinks(i) > 2 ){
+		// if( molecules.getNumLinks(i) > 2 ){
+		if( molecules[i].isReactive() && molecules[i].getNumMaxLinks() > 2 ){
 			//temporary storage for the neighboring crosslinks
 			std::vector<neighborX> NeighborIDs;
 			auto posX(molecules[i].getVector3D());
 			for (size_t j = 0 ; j < molecules.getNumLinks(i); j++){
 				uint32_t tail(i);
 				uint32_t head(molecules.getNeighborIdx(i,j));
-				auto posHead(molecules[head].getVector3D());
-				auto bond(LemonadeDistCalcs::MinImageVector( posX,posHead,ingredients));
-				auto jumpVector(posHead-bond-posX); // tracks if one bond jumps across periodic images 
+				VectorDouble3 posHead(molecules[head].getVector3D());
+				VectorDouble3 bond(LemonadeDistCalcs::MinImageVector( posX,posHead,ingredients));
+				if(bond.getLength() > std::sqrt(10)){
+					std::stringstream errormessage;
+					errormessage << "FeatureCrosslinkConnectionsLookUp: Wrong bond " << bond << " between " << i << " and " << head << "\n";
+					throw std::runtime_error(errormessage.str());
+				}
+				VectorDouble3 jumpVector(posHead-bond-posX); // tracks if one bond jumps across periodic images 
 				//direct connection of two cross links
 				if (molecules.getNumLinks(head) > 2) {
 					NeighborIDs.push_back( neighborX(head, 1, jumpVector) );

@@ -62,14 +62,13 @@ private:
     const double bondlength;
 
     //Gaussina force extension relation 
-    VectorDouble3 FE(VectorDouble3 extensionVector, uint32_t nSegs){
+    VectorDouble3 FE(VectorDouble3 extensionVector, double nSegs){
         return extensionVector*3./(std::sqrt(nSegs)*bondlength*bondlength);
     }
     //Gaussian extension force relation 
     VectorDouble3 EF(VectorDouble3 force, double nSegs){
         return force/(-3.)*(std::sqrt(nSegs)*bondlength*bondlength);
     }
-    
 
     //calculate the shift for the cross link
     template< class IngredientsType >
@@ -81,7 +80,8 @@ private:
             VectorDouble3 Position(ing.getMolecules()[this->getIndex()].getVector3D());      
                 // std::cout << "CorssLinkPos=" << Position << std::endl;
             for (size_t i = 0; i < Neighbors.size(); i++){
-                VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D() -Neighbors[i].jump);
+                VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D()-Neighbors[i].jump);
+                std::cout << "ID1=" << this->getIndex() << " - (" << vec << " ) - " <<  Neighbors[i].ID << "=ID2\n";
                 avNSegments+=1./Neighbors[i].segDistance;
                 force+=FE(vec,Neighbors[i].segDistance);
             }
@@ -89,7 +89,7 @@ private:
         }
         // std::cout << "Force=" << force << " avN=" << avNSegments <<std::endl;
         VectorDouble3 shift=EF(force,1./avNSegments);
-        // std::cout << "Force=" << force << " avN=" << avNSegments  << " " <<shift<<std::endl;
+        std::cout << "Force=" << force << " avN=" << avNSegments  << " " <<shift<<std::endl;
         return shift;
     };
 
