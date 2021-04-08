@@ -75,21 +75,21 @@ private:
     VectorDouble3 CalculateShift(IngredientsType& ing ){
         std::vector<neighborX> Neighbors(ing.getCrossLinkNeighborIDs(this->getIndex()) );
         VectorDouble3 force(0.,0.,0.);
+        VectorDouble3 shift(0.,0.,0.);
         double avNSegments(0.);
         if (Neighbors.size() > 0) {
             VectorDouble3 Position(ing.getMolecules()[this->getIndex()].getVector3D());      
                 // std::cout << "CorssLinkPos=" << Position << std::endl;
             for (size_t i = 0; i < Neighbors.size(); i++){
                 VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D()-Neighbors[i].jump);
-                std::cout << "ID1=" << this->getIndex() << " - (" << vec << " ) - " <<  Neighbors[i].ID << "=ID2\n";
+                // VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D());
+                // std::cout << "ID1=" << this->getIndex() << " - (" << vec << " ) - " <<  Neighbors[i].ID << "=ID2\n";
                 avNSegments+=1./Neighbors[i].segDistance;
                 force+=FE(vec,Neighbors[i].segDistance);
             }
             force/=(1.*Neighbors.size());  
+            shift=EF(force,1./avNSegments);
         }
-        // std::cout << "Force=" << force << " avN=" << avNSegments <<std::endl;
-        VectorDouble3 shift=EF(force,1./avNSegments);
-        std::cout << "Force=" << force << " avN=" << avNSegments  << " " <<shift<<std::endl;
         return shift;
     };
 

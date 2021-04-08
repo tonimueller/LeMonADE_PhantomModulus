@@ -99,9 +99,12 @@ private:
  **/
 template<class IngredientsType>
 void FeatureCrosslinkConnectionsLookUp::fillTables(IngredientsType& ingredients){
+
 	const typename IngredientsType::molecules_type& molecules=ingredients.getMolecules();
 	std::cout << "FeatureCrosslinkConnectionsLookUp::fillTables" <<std::endl;
-	for (uint32_t i = 0 ;i < molecules.size();i++){
+	crosslinkIDs.resize(0);
+	CrossLinkNeighbors.clear();
+	for (uint32_t i = ingredients.getNumOfMonomersPerChain()*ingredients.getNumOfChains() ;i < molecules.size();i++){
 		//find next crosslink
 		// if( molecules.getNumLinks(i) > 2 ){
 		if( molecules[i].isReactive() && molecules[i].getNumMaxLinks() > 2 ){
@@ -119,13 +122,14 @@ void FeatureCrosslinkConnectionsLookUp::fillTables(IngredientsType& ingredients)
 					throw std::runtime_error(errormessage.str());
 				}
 				VectorDouble3 jumpVector(posHead-bond-posX); // tracks if one bond jumps across periodic images 
+				
 				//direct connection of two cross links
 				if (molecules.getNumLinks(head) > 2) {
 					NeighborIDs.push_back( neighborX(head, 1, jumpVector) );
 				}else{ 
 					uint32_t nSegments(1);
 					//cross links are connected by a chain 
-					while( molecules.getNumLinks(head) == 2 ){
+					while( molecules.getNumLinks(head) == 2 && head != i){
 						//find next head 
 						for (size_t k = 0 ; k < molecules.getNumLinks(head); k++){
 							uint32_t NextMonomer( molecules.getNeighborIdx(head,k));
@@ -136,11 +140,13 @@ void FeatureCrosslinkConnectionsLookUp::fillTables(IngredientsType& ingredients)
 							}
 						}
 						posHead=molecules[head].getVector3D();
-						bond=LemonadeDistCalcs::MinImageVector( posX,posHead,ingredients);
-						jumpVector+=(posHead-bond); // tracks if one bond jumps across periodic images 
+						auto posTail=molecules[tail].getVector3D();
+						bond=LemonadeDistCalcs::MinImageVector( posTail,posHead,ingredients);
+						jumpVector+=(posHead-bond-posTail); // tracks if one bond jumps across periodic images 
 						nSegments++;
 						//a cross link has more than 2 connections
 						if (molecules.getNumLinks(head) > 2) {
+							// std::cout << "JumpVector=" << jumpVector<<std::endl;
 							NeighborIDs.push_back(neighborX(head, nSegments, jumpVector));
 							break;
 						}
@@ -148,8 +154,8 @@ void FeatureCrosslinkConnectionsLookUp::fillTables(IngredientsType& ingredients)
 				}	
 			}
 			CrossLinkNeighbors[i]=NeighborIDs;
-			if(NeighborIDs.size()>0)
-				crosslinkIDs.push_back(i);
+			// if(NeighborIDs.size()>0)
+			crosslinkIDs.push_back(i);
 		}
 	}
 	std::cout << "FeatureCrosslinkConnectionsLookUp::fillTables.done" <<std::endl; 

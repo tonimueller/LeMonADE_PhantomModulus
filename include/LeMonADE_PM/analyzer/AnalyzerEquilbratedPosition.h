@@ -65,8 +65,6 @@ public:
 	// //! key: pair of cross link IDs, value: chain ID 
   	// std::map<std::pair<uint32_t,uint32_t>,uint32_t> CrossLinkPairChainTable;
 	
-	//! count up for each frame and give a unique number for the output files 
-	uint32_t nExecutions;
 
 	//! save the current values in Rg2TimeSeriesX, etc., to disk
 	void dumpData();
@@ -91,7 +89,6 @@ AnalyzerEquilbratedPosition<IngredientsType>::AnalyzerEquilbratedPosition(
 :ingredients(ingredients_)
 ,outAvPosBasename(outAvPosBasename_)
 ,outDistBasename(outDistBasename_)
-,nExecutions(0)
 {}
 ////////////////////////////////////////////////////////////////////////////////
 template< class IngredientsType >
@@ -167,60 +164,68 @@ void AnalyzerEquilbratedPosition<IngredientsType>::dumpData()
 {
   	double conversion, NReactedSites(0.0), NReactiveSites(0.0);
 	auto crosslinkID(ingredients.getCrosslinkIDs());
+	std::cout << "Analyze conversion of "<<crosslinkID.size()<<" crosslinks."<<std::endl;
 	for (size_t i = 0 ; i < crosslinkID.size(); i++){
-		auto IDx(crosslinkID[i]);			
-		uint32_t NLinks(ingredients.getMolecules().getNumLinks(IDx));
-		uint32_t nIrreversibleBonds=0;
-		for (uint32_t n = 0 ; n < NLinks ;n++){
-			uint32_t neighbor(ingredients.getMolecules().getNeighborIdx(IDx,n));
-			if( ingredients.getMolecules()[neighbor].isReactive() )
-				NReactedSites++;
-			else
-				nIrreversibleBonds++;
+		auto IDx(crosslinkID[i]);	
+		if( ingredients.getMolecules()[IDx].isReactive()){		
+			uint32_t nIrreversibleBonds=0;
+			for (uint32_t n = 0 ; n < ingredients.getMolecules().getNumLinks(IDx) ;n++){
+				uint32_t neighbor(ingredients.getMolecules().getNeighborIdx(IDx,n));
+				if( ingredients.getMolecules()[neighbor].isReactive() )
+					NReactedSites++;
+				else
+					nIrreversibleBonds++;
+			}
+			NReactiveSites+=(ingredients.getMolecules()[IDx].getNumMaxLinks()-nIrreversibleBonds);
 		}
-		NReactiveSites+=(ingredients.getMolecules()[IDx].getNumMaxLinks()-nIrreversibleBonds);
 	}
-  
-  conversion=NReactedSites/NReactiveSites;
-  std::vector< std::vector<double> > CrossLinkPositions=CollectAveragePositions() ;
- 
-  //output for the equilibrated positions 
-  std::stringstream commentAveragePosition;
-  commentAveragePosition<<"Created by AnalyzerEquilbratedPosition\n";
-  commentAveragePosition<<"ID's start at 0 \n";
-  commentAveragePosition<<"ID equilibrated position\n";
-  std::stringstream outAvPos;
-  outAvPos<<   std::setw(6) << std::setfill('0') << nExecutions;
-  outAvPos << "_" << outAvPosBasename;
-  
+	conversion=NReactedSites/NReactiveSites;
+	std::cout << "AnalyzerEquilbratedPosition :"<<std::endl;
+	std::cout << "NReactiveSites     =" << NReactiveSites <<std::endl;
+	std::cout << "NReactedSites      =" << NReactedSites <<std::endl;
+	std::cout << "conversion         =" << conversion <<std::endl;	
+	std::cout << "////////////////////////////////////"<<std::endl;	
 
-  ResultFormattingTools::writeResultFile(
-	  outAvPos.str(),
-	  ingredients,
-	  CrossLinkPositions,
-	  commentAveragePosition.str()
-  );
-		
-  // chain stretching distribution 
-  std::vector< std::vector<double> >  dist=CalculateDistance();
-  
-  std::stringstream commentDistribution;
-  commentDistribution<<"Created by AnalyzerEquilbratedPosition\n";
-  commentDistribution<<"Monomer ID's start at 0 \n";
-  commentDistribution<<"Chain ID's start at 1 \n";
-  commentDistribution<<"ID1 ID2 vector length ChainID \n";
-  std::stringstream outDist;
-  outDist<<   std::setw(6) << std::setfill('0') << nExecutions;
-  outDist << "_" << outDistBasename;
+	//output for the equilibrated positions 
+	std::vector< std::vector<double> > CrossLinkPositions=CollectAveragePositions() ;
+	std::stringstream commentAveragePosition;
+	commentAveragePosition<<"Created by AnalyzerEquilbratedPosition\n";
+	commentAveragePosition<<"ID's start at 0 \n";
+	commentAveragePosition<<"conversion="<<conversion<<"\n";
+	commentAveragePosition<<"ID equilibrated position\n";
+	std::stringstream outAvPos;
+	// outAvPos<<   std::setw(6) << std::setfill('0') << conversion;
+	outAvPos<<   "C" << conversion;
+	outAvPos << "_" << outAvPosBasename;
+	
 
-  ResultFormattingTools::writeResultFile(
-	  outDist.str(),
-	  ingredients,
-	  dist,
-	  commentDistribution.str()
-  );
-  
-  nExecutions++;
+	ResultFormattingTools::writeResultFile(
+		outAvPos.str(),
+		ingredients,
+		CrossLinkPositions,
+		commentAveragePosition.str()
+	);
+			
+	// chain stretching distribution 
+	std::vector< std::vector<double> >  dist=CalculateDistance();
+	
+	std::stringstream commentDistribution;
+	commentDistribution<<"Created by AnalyzerEquilbratedPosition\n";
+	commentDistribution<<"conversion="<<conversion<<"\n";
+	commentDistribution<<"Monomer ID's start at 0 \n";
+	commentDistribution<<"Chain ID's start at 1 \n";
+	commentDistribution<<"ID1 ID2 vector length ChainID \n";
+	std::stringstream outDist;
+	// outDist<<   std::setw(6) << std::setfill('0') << conversion;
+	outDist<<   "C" << conversion;
+	outDist << "_" << outDistBasename;
+
+	ResultFormattingTools::writeResultFile(
+		outDist.str(),
+		ingredients,
+		dist,
+		commentDistribution.str()
+	);
 }
 
 #endif /*LEMONADE_PM_ANALYZER_ANALYZEREQUILIBRATEPOSITON_H*/

@@ -51,12 +51,11 @@ class UpdaterReadCrosslinkConnections : public AbstractUpdater
 {
 public:
     UpdaterReadCrosslinkConnections(
-        IngredientsType &ing_, 
+        IngredientsType& ing_, 
         const std::string input_, 
         const double stepwidth_, 
         const double minConversion_): 
         ing(ing_), 
-        initialIng(ing_), 
         input(input_), 
         stepwidth(stepwidth_), 
         minConversion(minConversion_),
@@ -67,7 +66,7 @@ public:
 
 private:
   //! container storing system information about monomers
-  IngredientsType &ing;
+  IngredientsType& ing;
 
   //! container storing system information about monomers
   IngredientsType initialIng;
@@ -94,16 +93,19 @@ private:
   void ConnectCrossLinkToChain(uint32_t MonID, uint32_t chainID);
   
   //!bond Table 
-  std::map<std::pair<uint32_t,uint32_t>,uint32_t> bondTable;
+  std::map<std::pair<uint32_t,uint32_t>,std::vector<uint32_t> > bondTable;
 };
 
 
 template <class IngredientsType>
 void UpdaterReadCrosslinkConnections<IngredientsType>::ConnectCrossLinkToChain(uint32_t MonID, uint32_t chainID){
     std::pair<uint32_t,uint32_t> key(MonID,chainID-1);
-    if (bondTable.find(key) != bondTable.end())
-        ing.modifyMolecules().connect(MonID,bondTable.at(key));
-    else{
+    if (bondTable.find(key) != bondTable.end()){
+        if ( !ing.getMolecules().areConnected( MonID,bondTable.at(key)[0] ) )
+            ing.modifyMolecules().connect(MonID,bondTable.at(key)[0] );
+        else 
+            ing.modifyMolecules().connect(MonID,bondTable.at(key)[1] );
+    }else{
         std::stringstream errormessage;
         errormessage << "There was no such a connection in the bfm file for monomer ID= " << MonID << " with chainID=" << chainID-1<< "\n";
         throw std::runtime_error(errormessage.str());
@@ -128,9 +130,12 @@ void UpdaterReadCrosslinkConnections<IngredientsType>::initialize(){
                     ing.modifyMolecules().disconnect(i, neighbor );
                     uint32_t chainMonomer(std::min(i,neighbor) );
                     uint32_t chainID( (chainMonomer-chainMonomer%NMonomerPerChain)/NMonomerPerChain);
-                    bondTable[std::pair<uint32_t,uint32_t>(std::max(i,neighbor),chainID) ]=std::min(i,neighbor) ;
+                    bondTable[std::pair<uint32_t,uint32_t>(std::max(i,neighbor),chainID) ].push_back(std::min(i,neighbor)) ;
                 }
             }
+    std::cout << "Erase " << bondTable.size() << " bonds." <<std::endl;
+    ing.synchronize();
+    initialIng=ing;
 }
 /**
  * @brief read in connections up tp the next step 
@@ -176,12 +181,14 @@ bool UpdaterReadCrosslinkConnections<IngredientsType>::execute(){
         uint32_t Time, ChainID, MonID1, P1X, P1Y, P1Z, MonID2, P2X, P2Y, P2Z;
         ss << line;
         ss >> Time >> ChainID >> MonID1 >> P1X >> P1Y >> P1Z >> MonID2 >> P2X >> P2Y >> P2Z;
-        // std::cout <<  Time << " " << ChainID<< " "
-        //           << MonID1<< " " << P1X << " " << P1Y << " " << P1Z << " " 
-        //           << MonID2<< " " << P2X << " " << P2Y << " " << P2Z << "\n";
+        // if (NewConnections == 0 )
+        //     std::cout <<  Time << " " << ChainID<< " "
+        //             << MonID1<< " " << P1X << " " << P1Y << " " << P1Z << " " 
+        //             << MonID2<< " " << P2X << " " << P2Y << " " << P2Z << "\n";
         ing.modifyMolecules().setAge(Time);
-        // ing.modifyMolecules()[MonID1].modifyVector3D().setAllCoordinates(P1X, P1Y, P1Z);
         ConnectCrossLinkToChain(MonID1, ChainID);
+        //update positions : I think this is not needed
+        // ing.modifyMolecules()[MonID1].modifyVector3D().setAllCoordinates(P1X, P1Y, P1Z);
         // if (MonID2 > 0)
             // ing.modifyMolecules()[MonID2].modifyVector3D().setAllCoordinates(P2X, P2Y, P2Z);
         NewConnections++;
@@ -191,7 +198,7 @@ bool UpdaterReadCrosslinkConnections<IngredientsType>::execute(){
               << ing.getMolecules().getAge() << std::endl;
     ing.synchronize();
     nExecutions++;
-    std::cout << "UpdaterReadCrosslinkConnections::execute " << nExecutions << " times.\n\n";
+    std::cout << "UpdaterReadCrosslinkConnections::execute " << nExecutions << " times.\n";
     //close the filestream and return false if the file has ended and thus the updater has nothing more to do
     if (stream.eof()) {
         stream.close();

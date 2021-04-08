@@ -136,9 +136,9 @@ int main(int argc, char* argv[]){
 			myIngredients2.modifyMolecules()[i].setReactive(myIngredients.getMolecules()[i].isReactive());
 			myIngredients2.modifyMolecules()[i].setNumMaxLinks(myIngredients.getMolecules()[i].getNumMaxLinks());
 			for (size_t j = 0 ; j < myIngredients.getMolecules().getNumLinks(i);j++){
-			uint32_t neighbor(myIngredients.getMolecules().getNeighborIdx(i,j));
-			if( ! myIngredients2.getMolecules().areConnected(i,neighbor) )
-				myIngredients2.modifyMolecules().connect(i,neighbor);
+				uint32_t neighbor(myIngredients.getMolecules().getNeighborIdx(i,j));
+				if( ! myIngredients2.getMolecules().areConnected(i,neighbor) )
+					myIngredients2.modifyMolecules().connect(i,neighbor);
 			}
 		}
 		myIngredients2.synchronize();
@@ -147,10 +147,10 @@ int main(int argc, char* argv[]){
 		//read bonds and positions stepwise
 		taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
 		taskmanager2.addUpdater( new UpdaterForceBalancedPosition<Ing2>(myIngredients2, threshold) );
-		// taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
+		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
 		//initialize and run
 		taskmanager2.initialize();
-		taskmanager2.run(1);
+		taskmanager2.run();
 		taskmanager2.cleanup();
 		
 	}
