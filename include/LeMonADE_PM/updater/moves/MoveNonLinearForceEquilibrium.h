@@ -25,10 +25,11 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 --------------------------------------------------------------------------------*/
 
-#ifndef LEMONADE_PM_UPDATER_MOVES_MOVEFORCEEQUILIBRIUM_H
-#define LEMONADE_PM_UPDATER_MOVES_MOVEFORCEEQUILIBRIUM_H
+#ifndef LEMONADE_PM_UPDATER_MOVES_MOVENONLINEARFORCEEQUILIBRIUM_H
+#define LEMONADE_PM_UPDATER_MOVES_MOVENONLINEARFORCEEQUILIBRIUM_H
 #include <limits>
-#include <LeMonADE_PM/updater/moves/MoveForceEquilibriumBase.h>
+#include <fstream>
+#include <LeMonADE_PM/updater/moves/MoveNonLinearForceEquilibriumBase.h>
 #include <LeMonADE/utility/DistanceCalculation.h>
 #include <LeMonADE_PM/utility/neighborX.h>
 
@@ -36,7 +37,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @file
  *
- * @class MoveForceEquilibrium
+ * @class MoveNonLinearForceEquilibrium
  *
  * @brief Standard local bfm-move on simple cubic lattice for the scBFM.
  *
@@ -45,9 +46,9 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
  **/
 /*****************************************************************************/
 
-class MoveForceEquilibrium:public MoveForceEquilibriumBase<MoveForceEquilibrium>{
+class MoveNonLinearForceEquilibrium:public MoveForceEquilibriumBase<MoveNonLinearForceEquilibrium>{
 public:
-    MoveForceEquilibrium():bondlength(2.68){};
+    MoveNonLinearForceEquilibrium(std::filename input_, double relaxationChain_):input(input_),relaxationChain(relaxationChain_),bondlength(2.68){};
 
     // overload initialise function to be able to set the moves index and direction if neccessary
     template <class IngredientsType> void init(const IngredientsType& ing);
@@ -60,6 +61,35 @@ public:
 private:
     //average square bond length 
     const double bondlength;
+    //input filename for the force extension curve 
+    std::string input;
+    
+    //minimum force in the file 
+    double min_force:
+    //maximum force in the file 
+    double max_force;
+    //force steps 
+    double force_steps;
+    
+    //min_extension in the file 
+    double min_extension;
+    //maximum extensions in the file 
+    double max_extension;
+    //extension steps 
+    double extension_steps;
+    
+    //force extension mapping
+    std::map<double, double> extension_force
+    //extension force mapping 
+    std::vector<double> force_extension;
+
+    //an equivalent chain which relaxes the cross link
+    double relaxationChain;
+
+
+
+    //read file to create a lookup table of the force extension curve 
+    void createTable();
 
     //Gaussina force extension relation 
     //f=R*3/(N*b^2)
@@ -84,21 +114,70 @@ private:
                 // std::cout << "CorssLinkPos=" << Position << std::endl;
             for (size_t i = 0; i < Neighbors.size(); i++){
                 VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D()-Neighbors[i].jump);
-                // VectorDouble3 vec=LemonadeDistCalcs::MinImageVector(ing.getMolecules()[Neighbors[i].ID].getVector3D(),Position,ing);
-                // VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D());
-                // std::cout << "ID1=" << this->getIndex() << " - (" << vec << " ) - " <<  Neighbors[i].ID << "=ID2\n";
-                avNSegments+=1./Neighbors[i].segDistance;
-                force+=FE(vec,Neighbors[i].segDistance);
+                // avNSegments+=1./Neighbors[i].segDistance;
+                // force+=FE(vec,Neighbors[i].segDistance);
+                force+=force_extension[vec.getLength()]*vec.normalize();
             }
             // force/=(1.*Neighbors.size());  
-            shift=EF(force,1./avNSegments);
+            shift=EF(force,relaxationChain);
         }
         return shift;
     };
 
+
 };
 /////////////////////////////////////////////////////////////////////////////
 /////////// implementation of the members ///////////////////////////////////
+void MoveNonLinearForceEquilibrium::createTable(){
+    std::ifstream in(input);
+    uint32_t counter(0);
+    while(in.good()){
+        std::string line;
+        getline(stream, line);
+        //ignore comments and blank lines 
+        if (line.empty())
+            findStartofData = true;
+        else if (line.at(0) == '#') //go to next line
+            continue;
+        //read data 
+        double force, extension;
+        std::stringstream ss << line;
+        ss>>force >> extension; 
+        if(min_force > force ) min_force=force; 
+        if(max_force < force ) max_force=force; 
+        if(min_extension > extension ) min_extension=extension; 
+        if(min_extension < extension ) max_extension=extension; 
+        extension_force.insert(extension_force.end(),std::pair<double,double>(force, extension));
+        if(counter==1){
+            force_steps=max_force-min_force;
+        }else if(counter>1)
+        counter++;
+    }
+    in.close();
+     //make lookup for the extension force relation 
+     //make a entry from 0 to max_extension in steps of 1 
+    for ( auto r=0;r<static_cast<uint32_t>(max_extension); r++   ){
+        if(r==0)
+            extension_force.push_back(0.);
+        else{
+            auto it_last=extension_force.begin()
+            for (auto it=extension_force.begin(); it !=extension_force.end();it++){
+                if(it->second > r){
+                    //at the force linear interpolated in between the two current forces
+                    auto deltaForce(it->first-it_last->first);
+                    auto deltaExtension(it->second-it_last->second);
+                    auto factor( (static_cast<double>(r)-it_last->second)/deltaExtension );
+                    //at interpolated force
+                    force_extension.push_back(it_last->first+deltaForce*factor);
+                    break;
+                }
+                it_last=it;
+            }
+
+        }
+    }
+}
+
 
 /*****************************************************************************/
 /**
@@ -110,7 +189,7 @@ private:
  * @param ing A reference to the IngredientsType - mainly the system
  **/
 template <class IngredientsType>
-void MoveForceEquilibrium::init(const IngredientsType& ing)
+void MoveNonLinearForceEquilibrium::init(const IngredientsType& ing)
 {
     this->resetProbability();
 
@@ -131,7 +210,7 @@ void MoveForceEquilibrium::init(const IngredientsType& ing)
  * @param index index of the monomer to be connected
  **/
 template <class IngredientsType>
-void MoveForceEquilibrium::init(const IngredientsType& ing, uint32_t index)
+void MoveNonLinearForceEquilibrium::init(const IngredientsType& ing, uint32_t index)
 {
   this->resetProbability();
 
@@ -139,7 +218,7 @@ void MoveForceEquilibrium::init(const IngredientsType& ing, uint32_t index)
   if( (index >= 0) && (index <= (ing.getMolecules().size()-1)) )
     this->setIndex( index );
   else
-    throw std::runtime_error("MoveForceEquilibrium::init(ing, index): index out of range!");
+    throw std::runtime_error("MoveNonLinearForceEquilibrium::init(ing, index): index out of range!");
 
   //calculate the shift of the cross link
   this->setShiftVector(CalculateShift(ing));
@@ -157,7 +236,7 @@ void MoveForceEquilibrium::init(const IngredientsType& ing, uint32_t index)
  * @param bondpartner index of the monomer to connect to 
  **/
 template <class IngredientsType>
-void MoveForceEquilibrium::init(const IngredientsType& ing, uint32_t index, VectorDouble3 dir )
+void MoveNonLinearForceEquilibrium::init(const IngredientsType& ing, uint32_t index, VectorDouble3 dir )
 {
   this->resetProbability();
 
@@ -165,7 +244,7 @@ void MoveForceEquilibrium::init(const IngredientsType& ing, uint32_t index, Vect
   if( (index >= 0) && (index <= (ing.getMolecules().size()-1)) )
     this->setIndex( index );
   else
-    throw std::runtime_error("MoveForceEquilibrium::init(ing, index, bondpartner): index out of range!");
+    throw std::runtime_error("MoveNonLinearForceEquilibrium::init(ing, index, bondpartner): index out of range!");
 
   //calculate the shift of the cross link
   this->setShiftVector(dir);
@@ -181,7 +260,7 @@ void MoveForceEquilibrium::init(const IngredientsType& ing, uint32_t index, Vect
  * @return True if move is valid. False, otherwise.
  **/
 template <class IngredientsType>
-bool MoveForceEquilibrium::check(IngredientsType& ing)
+bool MoveNonLinearForceEquilibrium::check(IngredientsType& ing)
 {
   //send the move to the Features to be checked
   return ing.checkMove(ing,*this);
@@ -197,7 +276,7 @@ bool MoveForceEquilibrium::check(IngredientsType& ing)
  * @param ing A reference to the IngredientsType - mainly the system
  **/
 template< class IngredientsType>
-void MoveForceEquilibrium::apply(IngredientsType& ing)
+void MoveNonLinearForceEquilibrium::apply(IngredientsType& ing)
 {
 
 	//move must FIRST be applied to the features
