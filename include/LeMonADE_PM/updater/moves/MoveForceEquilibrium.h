@@ -95,12 +95,12 @@ private:
                 //                   << std::endl;
                 //     throw std::runtime_error(error_message.str());
                 // }
-                // avNSegments+=1./Neighbors[i].segDistance;
-                // force+=FE(vec,Neighbors[i].segDistance);
-                shift+=vec;
+                avNSegments+=1./Neighbors[i].segDistance;
+                force+=FE(vec,Neighbors[i].segDistance);
+                // shift+=vec;
             }
-            shift/=(1.*Neighbors.size());  
-            // shift=EF(force,1./avNSegments);
+            // shift/=(1.*Neighbors.size());  
+            shift=EF(force,1./avNSegments);
             // shift=EF(force,ing.getNumOfMonomersPerChain());
             
         }
