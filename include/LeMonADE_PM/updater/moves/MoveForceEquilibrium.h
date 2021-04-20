@@ -69,7 +69,7 @@ private:
     //Gaussian extension force relation 
     //R=-f/3*N*b^2
     VectorDouble3 EF(VectorDouble3 force, double nSegs){
-        return force/(-3.)*std::sqrt(nSegs)*bondlength*bondlength;
+        return force/(3.)*std::sqrt(nSegs)*bondlength*bondlength;
     }
 
     //calculate the shift for the cross link
@@ -81,17 +81,28 @@ private:
         double avNSegments(0.);
         if (Neighbors.size() > 0) {
             VectorDouble3 Position(ing.getMolecules()[this->getIndex()].getVector3D());      
-                // std::cout << "CorssLinkPos=" << Position << std::endl;
             for (size_t i = 0; i < Neighbors.size(); i++){
-                VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D()-Neighbors[i].jump);
-                // VectorDouble3 vec=LemonadeDistCalcs::MinImageVector(ing.getMolecules()[Neighbors[i].ID].getVector3D(),Position,ing);
-                // VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D());
-                // std::cout << "ID1=" << this->getIndex() << " - (" << vec << " ) - " <<  Neighbors[i].ID << "=ID2\n";
-                avNSegments+=1./Neighbors[i].segDistance;
-                force+=FE(vec,Neighbors[i].segDistance);
+                VectorDouble3 vec(ing.getMolecules()[Neighbors[i].ID].getVector3D()-Position-Neighbors[i].jump);
+                // VectorDouble3 vec=LemonadeDistCalcs::MinImageVector(Position,ing.getMolecules()[Neighbors[i].ID].getVector3D(),ing);
+                // if ( vec!= vec2) {
+                //     std::stringstream error_message;
+                //     error_message 
+                //                   << "distance from jump=(" << vec  << ") \n"
+                //                   << "distance from  IMC=(" << vec2 << ") \n"
+                //                   << "jump vector=("<< Neighbors[i].jump <<") \n" 
+                //                   << "position1=("<<Position <<") \n"
+                //                   << "position2=("<<ing.getMolecules()[Neighbors[i].ID].getVector3D() <<") \n"
+                //                   << std::endl;
+                //     throw std::runtime_error(error_message.str());
+                // }
+                // avNSegments+=1./Neighbors[i].segDistance;
+                // force+=FE(vec,Neighbors[i].segDistance);
+                shift+=vec;
             }
-            // force/=(1.*Neighbors.size());  
-            shift=EF(force,1./avNSegments);
+            shift/=(1.*Neighbors.size());  
+            // shift=EF(force,1./avNSegments);
+            // shift=EF(force,ing.getNumOfMonomersPerChain());
+            
         }
         return shift;
     };
