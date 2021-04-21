@@ -86,7 +86,8 @@ bool UpdaterForceBalancedPosition<IngredientsType>::execute(){
         }else 
             avShift=threshold*1.1;
         ing.modifyMolecules().setAge(ing.getMolecules().getAge()+1);
-        std::cout << "MCS: " << ing.getMolecules().getAge() << "  and average shift: " << avShift << std::endl;
+        if (ing.getMolecules().getAge() %1000 == 0 )
+            std::cout << "MCS: " << ing.getMolecules().getAge() << "  and average shift: " << avShift << std::endl;
     }
     std::cout << "Finish equilibration with average shift per cross link < " << avShift << " after " << ing.getMolecules().getAge()-StartMCS <<std::endl;
     ing.modifyMolecules().setAge(StartMCS);

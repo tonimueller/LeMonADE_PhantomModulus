@@ -104,7 +104,8 @@ void FeatureCrosslinkConnectionsLookUp::fillTables(IngredientsType& ingredients)
 	std::cout << "FeatureCrosslinkConnectionsLookUp::fillTables" <<std::endl;
 	crosslinkIDs.resize(0);
 	CrossLinkNeighbors.clear();
-	for (uint32_t i = ingredients.getNumOfMonomersPerChain()*ingredients.getNumOfChains() ;i < molecules.size();i++){
+	auto nChainMonomers(ingredients.getNumOfMonomersPerChain()*ingredients.getNumOfChains() );
+	for (uint32_t i = nChainMonomers ;i < molecules.size();i++){
 		//find next crosslink
 		// if( molecules.getNumLinks(i) > 2 ){
 		if( molecules[i].isReactive() && molecules[i].getNumMaxLinks() > 2 ){
@@ -129,7 +130,7 @@ void FeatureCrosslinkConnectionsLookUp::fillTables(IngredientsType& ingredients)
 				}else{ 
 					uint32_t nSegments(1);
 					//cross links are connected by a chain 
-					while( molecules.getNumLinks(head) == 2 && head != i){
+					while( molecules.getNumLinks(head) == 2 && head != i ){
 						//find next head 
 						for (size_t k = 0 ; k < molecules.getNumLinks(head); k++){
 							uint32_t NextMonomer( molecules.getNeighborIdx(head,k));
@@ -145,7 +146,8 @@ void FeatureCrosslinkConnectionsLookUp::fillTables(IngredientsType& ingredients)
 						jumpVector+=(posHead-bond-posTail); // tracks if one bond jumps across periodic images 
 						nSegments++;
 						//a cross link has more than 2 connections
-						if (molecules.getNumLinks(head) > 2) {
+						// if (molecules.getNumLinks(head) > 2 && head >= nChainMonomers  ) {
+						if( molecules[head].isReactive() && molecules[head].getNumMaxLinks() > 2 ){
 							// std::cout << "JumpVector=" << jumpVector<<std::endl;
 							NeighborIDs.push_back(neighborX(head, nSegments, jumpVector));
 							break;

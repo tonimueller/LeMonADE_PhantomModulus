@@ -83,26 +83,10 @@ private:
             VectorDouble3 Position(ing.getMolecules()[this->getIndex()].getVector3D());      
             for (size_t i = 0; i < Neighbors.size(); i++){
                 VectorDouble3 vec(ing.getMolecules()[Neighbors[i].ID].getVector3D()-Position-Neighbors[i].jump);
-                // VectorDouble3 vec=LemonadeDistCalcs::MinImageVector(Position,ing.getMolecules()[Neighbors[i].ID].getVector3D(),ing);
-                // if ( vec!= vec2) {
-                //     std::stringstream error_message;
-                //     error_message 
-                //                   << "distance from jump=(" << vec  << ") \n"
-                //                   << "distance from  IMC=(" << vec2 << ") \n"
-                //                   << "jump vector=("<< Neighbors[i].jump <<") \n" 
-                //                   << "position1=("<<Position <<") \n"
-                //                   << "position2=("<<ing.getMolecules()[Neighbors[i].ID].getVector3D() <<") \n"
-                //                   << std::endl;
-                //     throw std::runtime_error(error_message.str());
-                // }
                 avNSegments+=1./Neighbors[i].segDistance;
                 force+=FE(vec,Neighbors[i].segDistance);
-                // shift+=vec;
             }
-            // shift/=(1.*Neighbors.size());  
             shift=EF(force,1./avNSegments);
-            // shift=EF(force,ing.getNumOfMonomersPerChain());
-            
         }
         return shift;
     };

@@ -25,7 +25,13 @@
  *
  * @class AnalyzerEquilbratedPosition
  *
- * @brief Analyzer for evaluating ...
+ * @brief Analyzer for evaluating the average position of cross links and their average distance 
+ * 
+ * @details The average distance between crosslinks can be used to calculate the the Phantom 
+ * modulus of the network: For that sum up all squared distances between crosslinks devided by the 
+ * number of chains with a distance greater 0 and normalized to Nb^2. (Multiply the density to obtain 
+ * (f-2)/f. Here f is the functionality. I think for the correct factor one needs to use the weight 
+ * averaged functionality...?!).
  *
  * @tparam IngredientsType Ingredients class storing all system information( e.g. monomers, bonds, etc).
  *
@@ -62,18 +68,14 @@ public:
 	//!name of the output file for the distribution is outputFilePrefix_timeseries.dat
 	std::string  outDistBasename;
 
-	// //! key: pair of cross link IDs, value: chain ID 
-  	// std::map<std::pair<uint32_t,uint32_t>,uint32_t> CrossLinkPairChainTable;
-	
-
 	//! save the current values in Rg2TimeSeriesX, etc., to disk
 	void dumpData();
+
 	//! calculates the distance between crosslinks and stores IDs, distance vector and chainID
 	std::vector< std::vector<double> >  CalculateDistance();
+
 	//! just collects the id and the position for the cross links 
 	std::vector<std::vector<int> > CollectAveragePositions();
-	// //! returns the chain Id for a pair of cross links 
-	// uint32_t getChainIDByPair(uint32_t MonID1, uint32_t MonID2) const ;
 };
 
 /*************************************************************************
@@ -138,18 +140,6 @@ std::vector< std::vector<int> >  AnalyzerEquilbratedPosition<IngredientsType>::C
 	}
 	return AveragePosition;
 }
-////////////////////////////////////////////////////////////////////////////////
-// template< class IngredientsType >
-// uint32_t  AnalyzerEquilbratedPosition<IngredientsType>::getChainIDByPair(uint32_t MonID1, uint32_t MonID2) const {
-// 	std::pair<uint32_t, uint32_t> CrosslinkPair=std::make_pair(std::min( MonID1,MonID2),std::max( MonID1,MonID2));
-// 	if ( CrossLinkPairChainTable.find(CrosslinkPair) == CrossLinkPairChainTable.end()){
-// 		std::stringstream errormessage;
-// 		errormessage << "AnalyzerEquilbratedPosition::getChainIDByPair Cross link pair " << CrosslinkPair.first << " and " << CrosslinkPair.second  <<" does not exist.";
-// 		throw std::runtime_error(errormessage.str());	    
-// 	}
-// 	return CrossLinkPairChainTable.at( CrosslinkPair );
-// }
-////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief calculates the average distances between monomers and their distribution 
  * */
@@ -206,7 +196,6 @@ void AnalyzerEquilbratedPosition<IngredientsType>::dumpData()
 	commentAveragePosition<<"conversion="<<conversion<<"\n";
 	commentAveragePosition<<"ID equilibrated position\n";
 	std::stringstream outAvPos;
-	// outAvPos<<   std::setw(6) << std::setfill('0') << conversion;
 	outAvPos<<   std::setprecision(2)<<   "C" << conversion;
 	outAvPos << "_" << outAvPosBasename;
 	
@@ -228,7 +217,6 @@ void AnalyzerEquilbratedPosition<IngredientsType>::dumpData()
 	commentDistribution<<"Chain ID's start at 1 \n";
 	commentDistribution<<"ID1 ID2 vector length ChainID \n";
 	std::stringstream outDist;
-	// outDist<<   std::setw(6) << std::setfill('0') << conversion;
 	outDist<<  std::setprecision(2) <<   "C" << conversion;
 	outDist << "_" << outDistBasename;
 
