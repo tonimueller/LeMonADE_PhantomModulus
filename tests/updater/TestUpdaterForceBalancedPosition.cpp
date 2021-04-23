@@ -46,6 +46,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
 TEST_CASE( "Test class UpdaterForceBalancedPosition" ) 
 {
     typedef LOKI_TYPELIST_4(FeatureBox, FeatureCrosslinkConnectionsLookUp,FeatureFixedMonomers,FeatureSystemInformationLinearMeltWithCrosslinker ) Features;
@@ -114,11 +115,6 @@ TEST_CASE( "Test class UpdaterForceBalancedPosition" )
         ingredients.modifyMolecules()[4].setReactive(true); 
         ingredients.modifyMolecules()[4].setNumMaxLinks(3); 
 
-
-        // ingredients.modifyMolecules()[1].setMovableTag(false);
-        // ingredients.modifyMolecules()[2].setMovableTag(false);
-        // ingredients.modifyMolecules()[3].setMovableTag(false);
-        // ingredients.modifyMolecules()[4].setMovableTag(false);
         ingredients.modifyMolecules()[5].setMovableTag(false);
         ingredients.modifyMolecules()[6].setMovableTag(false);
         ingredients.modifyMolecules()[7].setMovableTag(false);
@@ -131,7 +127,7 @@ TEST_CASE( "Test class UpdaterForceBalancedPosition" )
         REQUIRE(ingredients.getMolecules().size()==13 );
         REQUIRE_NOTHROW(ingredients.synchronize(ingredients));
         //check some basics
-        UpdaterForceBalancedPosition<IngredientsType> updater(ingredients, 0.0001);
+        UpdaterForceBalancedPosition<IngredientsType,MoveForceEquilibrium> updater(ingredients, 0.0001);
         updater.execute();
         auto vec2=LemonadeDistCalcs::MinImageVector(VectorDouble3(0.,0.,0.),ingredients.getMolecules()[0].getVector3D(),ingredients );
         REQUIRE(vec2.getX() == Approx(5.3125));

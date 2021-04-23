@@ -50,8 +50,9 @@ class MoveNonLinearForceEquilibrium:public MoveForceEquilibriumBase<MoveNonLinea
 public:
     //! constructor for the class MoveNonLinearForceEquilibrium taking the filename of the force extension relation and the realaxation parameter for the chain 
     MoveNonLinearForceEquilibrium(std::string filename_="", double relaxationChain_=1.):
-        filename(filename_),relaxationChain(relaxationChain_),bondlength(2.68){
+        filename(filename_),bondlength(2.68){
             if( !filename.empty() ) createTable();
+            setRelaxationParameter(relaxationChain_);
         };
     // overload initialise function to be able to set the moves index and direction if neccessary
     template <class IngredientsType> void init(const IngredientsType& ing);
@@ -63,17 +64,20 @@ public:
 
     //!read file to create a lookup table of the force extension curve 
     void createTable();
-    //!read file to create a lookup table of the force extension curve 
-    void createTable(std::string filename_){
-        setFilename(filename); 
-        createTable();}
+    // //!read file to create a lookup table of the force extension curve 
+    // void createTable(std::string filename_){
+    //     setFilename(filename); 
+    //     createTable();}
     //! set the filename for the force extension data 
-    void setFilename(std::string filename_){filename=filename_;}
+    void setFilename(std::string filename_){filename=filename_;createTable();}
     //! get the filename for the force extension data 
     std::string const getFilename(){return filename;}
     
     //! set the relaxation parameter for the cross link
-    void setRelaxationParameter(double relaxationChain_){relaxationChain=relaxationChain_;}
+    void setRelaxationParameter(double relaxationChain_){
+        relaxationChain=relaxationChain_;
+        springConstant = relaxationChain*bondlength*bondlength/(-3.);
+    }
     //! get the relaxation parameter for the cross link 
     double getRelaxationParameter(){return relaxationChain;} 
     //uses the read force extension relation 
@@ -93,8 +97,8 @@ public:
     }
     //Gaussian extension force relation 
     //R=-f/3*N*b^2
-    VectorDouble3 FE(VectorDouble3 const force, double const nSegs) const {
-        return force/(-3.)*nSegs*bondlength*bondlength;
+    VectorDouble3 FE(VectorDouble3 const force ) const {
+        return force*springConstant;
     }
 
 private:
@@ -116,6 +120,9 @@ private:
     double max_extension;
     //extension steps 
     double extension_steps;
+
+    //spring constant for the equivalent chain used for the relaxation of the cross links 
+    double springConstant;
    
     //force extension mapping
     std::map<double, double> extension_force;
@@ -136,7 +143,7 @@ private:
                 VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D()-Neighbors[i].jump);
                 force+=EF(vec);//Neighbors[i].segDistance
             }
-            shift=FE(force,relaxationChain);
+            shift=FE(force/(static_cast<double>(Neighbors.size()) ));
         }
         return shift;
     };
@@ -187,12 +194,9 @@ void MoveNonLinearForceEquilibrium::createTable(){
                 }
                 it_last=it;
             }
-
         }
     }
 }
-
-
 /*****************************************************************************/
 /**
  * @brief Initialize the move.

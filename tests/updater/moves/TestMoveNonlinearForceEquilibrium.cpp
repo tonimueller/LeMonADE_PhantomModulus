@@ -31,29 +31,22 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <LeMonADE/core/Molecules.h>
 #include <LeMonADE/core/Ingredients.h>
-#include <LeMonADE/feature/FeatureSystemInformationLinearMeltWithCrosslinker.h>
-#include <LeMonADE/feature/FeatureBox.h>
 #include <LeMonADE/utility/Vector3D.h>
 
 #include <extern/catch.hpp>
 
-#include <LeMonADE_PM/feature/FeatureCrosslinkConnectionsLookUp.h>
+
 #include <LeMonADE_PM/updater/moves/MoveNonLinearForceEquilibrium.h>
-#include <LeMonADE_PM/feature/FeatureFixedMonomers.h>
 
 
 TEST_CASE( "Test class MoveNonLinearForceEquilibrium" ) 
 {
-    typedef LOKI_TYPELIST_4(FeatureBox, FeatureCrosslinkConnectionsLookUp,FeatureFixedMonomers,FeatureSystemInformationLinearMeltWithCrosslinker) Features;
-    typedef ConfigureSystem<VectorDouble3,Features,4> Config;
-    typedef Ingredients<Config> IngredientsType;
-
-  
+ 
     std::streambuf* originalBuffer;
     std::ostringstream tempStream;
     //redirect stdout 
-    // originalBuffer=std::cout.rdbuf();
-    // std::cout.rdbuf(tempStream.rdbuf());
+    originalBuffer=std::cout.rdbuf();
+    std::cout.rdbuf(tempStream.rdbuf());
   
     SECTION("Check setter/getter in  data file ","[MoveNonLinearForceEquilibrium_GETSET]")
     {
@@ -63,7 +56,8 @@ TEST_CASE( "Test class MoveNonLinearForceEquilibrium" )
         REQUIRE(move.getFilename() == "MaxisCruve.dat");
         move.setRelaxationParameter(123.28);
         REQUIRE(move.getRelaxationParameter() == 123.28);
-        REQUIRE(19.1530666667 == Approx(move.FE(VectorDouble3(0.5, 0.,0.),16).getLength()) );
+        move.setRelaxationParameter(16.);
+        REQUIRE(19.1530666667 == Approx(move.FE(VectorDouble3(0.5, 0.,0.)).getLength()) );
     }
     SECTION ("Check the reading of a file1", "[MoveNonLinearForceEquilibrium_READIN1]")
     {
@@ -107,12 +101,12 @@ TEST_CASE( "Test class MoveNonLinearForceEquilibrium" )
     }
     SECTION ("Check the reading of a file3", "[MoveNonLinearForceEquilibrium_READIN3]")
     {
-        //read in a perfectly spaces curve
+        //read in  curve with bigger spaces 
         std::string filename("TmCurve.dat");
         std::ofstream out(filename);
         const double N=32.;
         const double b=2.68;
-        for(auto i=0; i <100; i+=2 ){
+        for(auto i=0; i <100; i+=5 ){
             double force(static_cast<double>(i)*3./(N*b*b));
             //force extension :
             out << force  << "\t"<<i << "\n"; 
@@ -127,7 +121,7 @@ TEST_CASE( "Test class MoveNonLinearForceEquilibrium" )
     }
 
     //restore cout 
-    // std::cout.rdbuf(originalBuffer);
+    std::cout.rdbuf(originalBuffer);
 
 }
 
