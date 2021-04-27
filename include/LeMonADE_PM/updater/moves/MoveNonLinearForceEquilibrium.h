@@ -140,7 +140,8 @@ private:
         if (Neighbors.size() > 0) {
             VectorDouble3 Position(ing.getMolecules()[this->getIndex()].getVector3D());      
             for (size_t i = 0; i < Neighbors.size(); i++){
-                VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D()-Neighbors[i].jump);
+                VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D()+Neighbors[i].jump);
+                // std::cout << Position << " " << ing.getMolecules()[Neighbors[i].ID].getVector3D() << " " << Neighbors[i].jump <<"\n";
                 force+=EF(vec);//Neighbors[i].segDistance
             }
             shift=FE(force/(static_cast<double>(Neighbors.size()) ));
@@ -196,6 +197,11 @@ void MoveNonLinearForceEquilibrium::createTable(){
             }
         }
     }
+    std::cout << "MoveNonLinearForceEquilibrium::createTable(): \n" 
+              << "min_force=" << min_force <<"\n"
+              << "max_force=" << max_force <<"\n"
+              << "min_extension=" << min_extension <<"\n"
+              << "max_extension=" << max_extension <<"\n";
 }
 /*****************************************************************************/
 /**

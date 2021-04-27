@@ -95,27 +95,22 @@ private:
   //!bond Table 
   std::map<std::pair<uint32_t,uint32_t>,std::vector<uint32_t> > bondTable;
 };
-
-
 template <class IngredientsType>
 bool  UpdaterReadCrosslinkConnectionsTendomer<IngredientsType>::ConnectCrossLinkToChain(uint32_t MonID, uint32_t chainID){
     std::pair<uint32_t,uint32_t> key(MonID,chainID-1);
     if (bondTable.find(key) != bondTable.end()){
         if ( !ing.getMolecules().areConnected( MonID,bondTable.at(key)[0] ) ){
             ing.modifyMolecules().connect(MonID,bondTable.at(key)[0] );
-            // std::cout << MonID <<"\t" << chainID-1 <<"\t" <<bondTable.at(key)[0]<<std::endl;
             return true ; 
         }
         //chain can only have one neighbor (without this statement a more or less random partner would be connected to the structure !!)
         if ( bondTable.at(key).size()>1 ) {
             ing.modifyMolecules().connect(MonID,bondTable.at(key)[1] );
-            // std::cout << MonID <<"\t" << chainID-1 <<"\t" <<bondTable.at(key)[1]<<std::endl;
             return true ; 
         }
     }
     return false; 
 }
-
 /**
  * @brief read in connections up to the minimum conversion given 
  * */
@@ -135,8 +130,6 @@ void UpdaterReadCrosslinkConnectionsTendomer<IngredientsType>::initialize(){
                     uint32_t chainMonomer(std::min(i,neighbor) );
                     uint32_t crosslink(std::max(i,neighbor));
                     uint32_t chainID( (chainMonomer-chainMonomer%NMonomerPerChain)/NMonomerPerChain);
-                    // std::cout<<"erase: "<<i<<"\t"<<chainID<<"\t"<<neighbor<<"\t"<<chainMonomer<<"\n";
-                    //there is only one situation possible for key(crosslink, chainID ) with more than one entry: pending loop
                     bondTable[std::pair<uint32_t,uint32_t>(crosslink,chainID) ].push_back(chainMonomer) ;
                 }
             }
@@ -159,22 +152,10 @@ bool UpdaterReadCrosslinkConnectionsTendomer<IngredientsType>::execute(){
     if (stream.fail())
       throw std::runtime_error(std::string("error opening input file ") + input + std::string("\n"));
     bool findStartofData(false);
-    //set head to beginning of the data block
-    // while (!findStartofData){
-    //     std::string line;
-    //     getline(stream, line);
-    //     if (line.empty())
-    //         findStartofData = true;
-    //     else if (line.at(0) == '#') //go to next line
-    //         continue;
-    //     else
-    //         throw std::runtime_error("Wrong input format!");
-    // }
     std::string line;
     getline(stream, line);
     while (line.empty() || line.at(0) == '#' ) 
         getline(stream, line);
-
     //current conversion 
     auto conversion = minConversion + static_cast<double>(nExecutions) * stepwidth;
     std::cout << "Current conversion is " <<conversion <<std::endl;
@@ -193,25 +174,14 @@ bool UpdaterReadCrosslinkConnectionsTendomer<IngredientsType>::execute(){
         uint32_t Time, createBreak, ChainID, nSegments, MonID1, P1X, P1Y, P1Z, MonID2, P2X, P2Y, P2Z;
         ss << line;
         ss >> Time >> createBreak>>  ChainID >> nSegments >>MonID1 >> P1X >> P1Y >> P1Z >> MonID2 >> P2X >> P2Y >> P2Z;
-        // if (NewConnections == 0 )
-        //     std::cout <<  Time << " " << ChainID<< " "
-        //             << MonID1<< " " << P1X << " " << P1Y << " " << P1Z << " " 
-        //             << MonID2<< " " << P2X << " " << P2Y << " " << P2Z << "\n";
         ing.modifyMolecules().setAge(Time);
-        // std::cout<<"connect: " << MonID1 << "\t" << ChainID<<std::endl;
         if ( ConnectCrossLinkToChain(MonID1, ChainID+1) ) {
-            // std::cout <<"Connection for Mon1 = "<< MonID1 << " with chainID=" << ChainID <<std::endl;
         }else if( ConnectCrossLinkToChain(MonID2, ChainID+1) ) {
-            // std::cout <<"Connection for Mon2 = "<< MonID2 << " with chainID=" << ChainID<<std::endl;
         }else {
             std::stringstream errormessage;
             errormessage << "There was no such a connection in the bfm file for monomer ID= " << MonID1  <<" of with ID=" << MonID2 <<  " with chainID=" << ChainID<< "\n";
             throw std::runtime_error(errormessage.str());
         }
-        //update positions : I think this is not needed
-        // ing.modifyMolecules()[MonID1].modifyVector3D().setAllCoordinates(P1X, P1Y, P1Z);
-        // if (MonID2 > 0)
-            // ing.modifyMolecules()[MonID2].modifyVector3D().setAllCoordinates(P2X, P2Y, P2Z);
         NewConnections++;
     }
     std::cout << "Read and add " << NewConnections << "/" << NMaxConnection 

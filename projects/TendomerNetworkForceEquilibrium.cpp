@@ -50,7 +50,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE_PM/updater/UpdaterReadCrosslinkConnectionsTendomer.h>
 #include <LeMonADE_PM/updater/moves/MoveForceEquilibrium.h>
 #include <LeMonADE_PM/updater/moves/MoveNonLinearForceEquilibrium.h>
-#include <LeMonADE_PM/feature/FeatureCrosslinkConnectionsLookUp.h>
+#include <LeMonADE_PM/feature/FeatureCrosslinkConnectionsLookUpTendomers.h>
 #include <LeMonADE_PM/analyzer/AnalyzerEquilbratedPosition.h>
 
 
@@ -120,7 +120,7 @@ int main(int argc, char* argv[]){
 		taskmanager.cleanup();
 		std::cout << "Read in conformation and go on to bring it into equilibrium forces..." <<std::endl;
 		//the foce equilibrium is reached off lattice ( no integer values for the positions )
-		typedef LOKI_TYPELIST_3(FeatureBox, FeatureCrosslinkConnectionsLookUp ,FeatureLabel) Features2;
+		typedef LOKI_TYPELIST_3(FeatureBox, FeatureCrosslinkConnectionsLookUpTendomers ,FeatureLabel) Features2;
 		typedef ConfigureSystem<VectorDouble3,Features2, 7> Config2;
 		typedef Ingredients<Config2> Ing2;
 		Ing2 myIngredients2;
@@ -160,10 +160,10 @@ int main(int argc, char* argv[]){
 		TaskManager taskmanager2;
 		//read bonds and positions stepwise
 		taskmanager2.addUpdater( new UpdaterReadCrosslinkConnectionsTendomer<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
-        // auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
-        // updater->setFilename(feCurve);
-        // updater->setRelaxationParameter(relaxationParameter);
-        auto updater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
+        auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
+        updater->setFilename(feCurve);
+        updater->setRelaxationParameter(relaxationParameter);
+        // auto updater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
         taskmanager2.addUpdater( updater );
 		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
 		//initialize and run

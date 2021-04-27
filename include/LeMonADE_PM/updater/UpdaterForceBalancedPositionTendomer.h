@@ -43,9 +43,12 @@ public:
     UpdaterForceBalancedPosition(IngredientsType& ing_, double threshold_ ):
     ing(ing_),threshold(threshold_){};
     
-    virtual void initialize(){}
+    virtual void initialize(){relaxationParameter=move.getRelaxationParameter();}// init(move);};
     bool execute();
     virtual void cleanup(){};  
+
+    void setFilename(const std::string filename) {move.setFilename(filename); }
+    void setRelaxationParameter( const double relax ) {move.setRelaxationParameter(relax);}
 private:
     //!copy of the main container for the system informations 
     IngredientsType& ing;
@@ -53,6 +56,8 @@ private:
     //! threshold for the certainty 
     double threshold;
 
+    double relaxationParameter;
+    
     //! move to equilibrate the cross links by force equilibrium
     moveType move;
     
@@ -65,6 +70,7 @@ bool UpdaterForceBalancedPosition<IngredientsType,moveType>::execute(){
     std::cout << "UpdaterForceBalancedPosition::execute(): Start equilibration" <<std::endl;
     double avShift(threshold*1.1);
     uint32_t StartMCS(ing.getMolecules().getAge());
+    setRelaxationParameter(relaxationParameter);
     //! get look up table for the cross link ids to monomer ids
     auto CrossLinkIDs(ing.getCrosslinkIDs());
     //! number of cross links 
@@ -88,6 +94,7 @@ bool UpdaterForceBalancedPosition<IngredientsType,moveType>::execute(){
         ing.modifyMolecules().setAge(ing.getMolecules().getAge()+1);
         if (ing.getMolecules().getAge() %1000 == 0 ){
             std::cout << "MCS: " << ing.getMolecules().getAge() << "  and average shift: " << avShift << std::endl;
+            setRelaxationParameter(move.getRelaxationParameter()*0.99 );
         }
     }
     std::cout << "Finish equilibration with average shift per cross link < " << avShift << " after " << ing.getMolecules().getAge()-StartMCS <<std::endl;
