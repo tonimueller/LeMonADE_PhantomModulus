@@ -29,6 +29,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #define LEMONADE_PM_UPDATER_MOVES_MOVENONLINEARFORCEEQUILIBRIUM_H
 #include <limits>
 #include <fstream>
+#include <sys/stat.h>
 #include <LeMonADE_PM/updater/moves/MoveForceEquilibriumBase.h>
 #include <LeMonADE/utility/DistanceCalculation.h>
 #include <LeMonADE_PM/utility/neighborX.h>
@@ -148,60 +149,77 @@ private:
         }
         return shift;
     };
+
+    //! check is file exists:
+    inline bool fileExists (const std::string& name) {
+        struct stat buffer;   
+        return (stat (name.c_str(), &buffer) == 0); 
+    }
 };
 /////////////////////////////////////////////////////////////////////////////
 /////////// implementation of the members ///////////////////////////////////
 void MoveNonLinearForceEquilibrium::createTable(){
-    std::ifstream in(filename);
-    uint32_t counter(0);
-    while(in.good() && in.peek()!=EOF){
-        std::string line;
-        getline(in, line);
-        //ignore comments and blank lines 
-        while (line.at(0) == '#' || line.empty() ) //go to next line
-            continue;
-        //read data 
-        double force, extension;
-        std::stringstream ss ;
-        ss<< line;
-        ss>>force >> extension; 
-        if(min_force > force ) min_force=force; 
-        if(max_force < force ) max_force=force; 
-        if(min_extension > extension ) min_extension=extension; 
-        if(max_extension < extension ) max_extension=extension; 
-        extension_force.insert(extension_force.end(),std::pair<double,double>(force, extension));
-        if(counter==1){
-            force_steps=max_force-min_force;
-        }else if(counter>1)
-        counter++;
-    }
-    in.close();
-     //make lookup for the extension force relation 
-     //make a entry from 0 to max_extension in steps of 1 
-    for ( auto r=0;r<static_cast<uint32_t>(max_extension); r++   ){
-        if(r==0)
-            force_extension.push_back(0.);
-        else{
-            auto it_last=extension_force.begin();
-            for (auto it=extension_force.begin(); it !=extension_force.end();it++){
-                if(it->second > r){
-                    //at the force linear interpolated in between the two current forces
-                    auto deltaForce(it->first-it_last->first);
-                    auto deltaExtension(it->second-it_last->second);
-                    auto factor( (static_cast<double>(r)-it_last->second)/deltaExtension );
-                    //at interpolated force
-                    force_extension.push_back(it_last->first+deltaForce*factor);
-                    break;
+    if (fileExists(filename )){
+        std::ifstream in(filename);
+        uint32_t counter(0);
+        extension_force.insert(extension_force.end(),std::pair<double,double>(0., 0.));
+        min_force=0.;
+        min_extension=0.;
+        while(in.good() && in.peek()!=EOF){
+            std::string line;
+            getline(in, line);
+            //ignore comments and blank lines 
+            while (line.at(0) == '#' || line.empty() ) //go to next line
+                continue;
+            //read data 
+            double force, extension;
+            std::stringstream ss ;
+            ss<< line;
+            ss>>force >> extension; 
+            if(min_force > force ) min_force=force; 
+            if(max_force < force ) max_force=force; 
+            if(min_extension > extension ) min_extension=extension; 
+            if(max_extension < extension ) max_extension=extension; 
+            extension_force.insert(extension_force.end(),std::pair<double,double>(force, extension));
+            if(counter==1){
+                force_steps=max_force-min_force;
+            }else if(counter>1)
+            counter++;
+        }
+        in.close();
+        //make lookup for the extension force relation 
+        //make a entry from 0 to max_extension in steps of 1 
+        for ( auto r=0;r<static_cast<uint32_t>(max_extension); r++   ){
+            if(r==0)
+                force_extension.push_back(0.);
+            else{
+                auto it_last=extension_force.begin();
+                for (auto it=extension_force.begin(); it !=extension_force.end();it++){
+                    if(it->second > r){
+                        //at the force linear interpolated in between the two current forces
+                        auto deltaForce(it->first-it_last->first);
+                        auto deltaExtension(it->second-it_last->second);
+                        auto factor( (static_cast<double>(r)-it_last->second)/deltaExtension );
+                        //at interpolated force
+                        force_extension.push_back(it_last->first+deltaForce*factor);
+                        break;
+                    }
+                    it_last=it;
                 }
-                it_last=it;
             }
         }
+        std::cout << "MoveNonLinearForceEquilibrium::createTable() force extension" <<std::endl;
+        for (auto i =0; i < 10; i ++ )
+            std::cout << i << "\t" << force_extension[i]<<std::endl;
+
+        std::cout << "MoveNonLinearForceEquilibrium::createTable(): \n" 
+                << "min_force=" << min_force <<"\n"
+                << "max_force=" << max_force <<"\n"
+                << "min_extension=" << min_extension <<"\n"
+                << "max_extension=" << max_extension <<"\n";
+    }else{
+        std::cerr<< "Provide a filename for the MoveNonLinearForceEquilibrium!\n" ;
     }
-    std::cout << "MoveNonLinearForceEquilibrium::createTable(): \n" 
-              << "min_force=" << min_force <<"\n"
-              << "max_force=" << max_force <<"\n"
-              << "min_extension=" << min_extension <<"\n"
-              << "max_extension=" << max_extension <<"\n";
 }
 /*****************************************************************************/
 /**

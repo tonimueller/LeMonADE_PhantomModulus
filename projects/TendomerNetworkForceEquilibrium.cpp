@@ -46,7 +46,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <extern/catchorg/clara/clara.hpp>
 
-#include <LeMonADE_PM/updater/UpdaterForceBalancedPosition.h>
+#include <LeMonADE_PM/updater/UpdaterForceBalancedPositionTendomer.h>
 #include <LeMonADE_PM/updater/UpdaterReadCrosslinkConnectionsTendomer.h>
 #include <LeMonADE_PM/updater/moves/MoveForceEquilibrium.h>
 #include <LeMonADE_PM/updater/moves/MoveNonLinearForceEquilibrium.h>
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]){
 		TaskManager taskmanager2;
 		//read bonds and positions stepwise
 		taskmanager2.addUpdater( new UpdaterReadCrosslinkConnectionsTendomer<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
-        auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
+        auto updater = new UpdaterForceBalancedPositionTendomer<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
         updater->setFilename(feCurve);
         updater->setRelaxationParameter(relaxationParameter);
         // auto updater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;

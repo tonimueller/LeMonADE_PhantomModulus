@@ -196,7 +196,7 @@ void AnalyzerEquilbratedPosition<IngredientsType>::dumpData()
 	commentAveragePosition<<"conversion="<<conversion<<"\n";
 	commentAveragePosition<<"ID equilibrated position\n";
 	std::stringstream outAvPos;
-	outAvPos<<   std::setprecision(2)<<   "C" << conversion;
+	outAvPos<<   std::setprecision(3)<<   "C" << conversion;
 	outAvPos << "_" << outAvPosBasename;
 	
 
@@ -217,7 +217,7 @@ void AnalyzerEquilbratedPosition<IngredientsType>::dumpData()
 	commentDistribution<<"Chain ID's start at 1 \n";
 	commentDistribution<<"ID1 ID2 vector length ChainID \n";
 	std::stringstream outDist;
-	outDist<<  std::setprecision(2) <<   "C" << conversion;
+	outDist<<  std::setprecision(3) <<   "C" << conversion;
 	outDist << "_" << outDistBasename;
 
 	ResultFormattingTools::writeResultFile(

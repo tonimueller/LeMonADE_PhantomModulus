@@ -24,23 +24,23 @@ You should have received a copy of the GNU General Public License
 along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 --------------------------------------------------------------------------------*/
-#ifndef LEMONADE_PM_UPDATER_UPDATERFORCEBALANCEPOSITION_H
-#define LEMONADE_PM_UPDATER_UPDATERFORCEBALANCEPOSITION_H
+#ifndef LEMONADE_PM_UPDATER_UPDATERFORCEBALANCEPOSITIONTENDOMER_H
+#define LEMONADE_PM_UPDATER_UPDATERFORCEBALANCEPOSITIONTENDOMER_H
 
 
 #include <LeMonADE/updater/AbstractUpdater.h>
 #include <vector>
  /**
- * @class UpdaterForceBalancedPosition
+ * @class UpdaterForceBalancedPositionTendomer
  * @tparam IngredientsType
  */
 
  template <class IngredientsType, class moveType >
-class UpdaterForceBalancedPosition:public AbstractUpdater
+class UpdaterForceBalancedPositionTendomer:public AbstractUpdater
 {
 public:
-    //! constructor for UpdaterForceBalancedPosition
-    UpdaterForceBalancedPosition(IngredientsType& ing_, double threshold_ ):
+    //! constructor for UpdaterForceBalancedPositionTendomer
+    UpdaterForceBalancedPositionTendomer(IngredientsType& ing_, double threshold_ ):
     ing(ing_),threshold(threshold_){};
     
     virtual void initialize(){relaxationParameter=move.getRelaxationParameter();}// init(move);};
@@ -66,8 +66,8 @@ private:
     
 };
 template <class IngredientsType, class moveType>
-bool UpdaterForceBalancedPosition<IngredientsType,moveType>::execute(){
-    std::cout << "UpdaterForceBalancedPosition::execute(): Start equilibration" <<std::endl;
+bool UpdaterForceBalancedPositionTendomer<IngredientsType,moveType>::execute(){
+    std::cout << "UpdaterForceBalancedPositionTendomer::execute(): Start equilibration" <<std::endl;
     double avShift(threshold*1.1);
     uint32_t StartMCS(ing.getMolecules().getAge());
     setRelaxationParameter(relaxationParameter);
@@ -94,7 +94,7 @@ bool UpdaterForceBalancedPosition<IngredientsType,moveType>::execute(){
         ing.modifyMolecules().setAge(ing.getMolecules().getAge()+1);
         if (ing.getMolecules().getAge() %1000 == 0 ){
             std::cout << "MCS: " << ing.getMolecules().getAge() << "  and average shift: " << avShift << std::endl;
-            setRelaxationParameter(move.getRelaxationParameter()*0.99 );
+            setRelaxationParameter(move.getRelaxationParameter()*0.995 );
         }
     }
     std::cout << "Finish equilibration with average shift per cross link < " << avShift << " after " << ing.getMolecules().getAge()-StartMCS <<std::endl;
