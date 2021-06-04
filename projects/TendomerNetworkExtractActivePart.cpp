@@ -192,10 +192,11 @@ int main(int argc, char* argv[]){
 		TaskManager taskmanager2;
 		taskmanager2.addAnalyzer( new AnalyzerWriteBfmFile<Ing >(outputBFM, myIngredients, 1) ); 
 		//initialize and run
-		taskmanager2.initialize();
-		taskmanager2.run(1);
-		taskmanager2.cleanup();
-
+		if ( nActiveTendomers > 0  ){
+			taskmanager2.initialize();
+			taskmanager2.run(1);
+			taskmanager2.cleanup();
+		}
 		// AnalyzerWriteBfmFileSubGroup<Ing,hasThisType<1> >  writer(outputBFM, myIngredients, 1, hasThisType<1>());
 		// writer.initialize();
 		
