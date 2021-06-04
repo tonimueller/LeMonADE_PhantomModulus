@@ -129,13 +129,13 @@ int main(int argc, char* argv[]){
             std::stringstream ss;
             uint32_t activeTag;
             ss << line;
-			std::cout << line <<"\n";
+			// std::cout << line <<"\n";
 			if (! line.empty()) {
 				ss >>activeTag;
 				auto tmpAttribute(0);
 				if(objectID < nCrossLinks ){
 					auto IdX(nChainMonomers+objectID);
-					std::cout << "OId=" << objectID << " IdX=" << IdX << std::endl;
+					// std::cout << "OId=" << objectID << " IdX=" << IdX << std::endl;
 					if (activeTag == 2 ){
 						tmpAttribute=1;	
 						nActiveCrossLinks++;
@@ -144,7 +144,7 @@ int main(int argc, char* argv[]){
 				}else{
 					auto IdCStart((objectID-nCrossLinks)*nSegments);
 					auto IdCEnd( (objectID-nCrossLinks+1)*nSegments-1);
-					std::cout << "OId=" << objectID << " IdC=" << IdCStart << "-" << IdCEnd << std::endl;
+					// std::cout << "OId=" << objectID << " IdC=" << IdCStart << "-" << IdCEnd << std::endl;
 					if (activeTag == 2 ) {
 						nActiveTendomers++;
 						tmpAttribute=1;
