@@ -4,3 +4,10 @@
 
 add_executable(TendomerNetworkForceEquilibrium TendomerNetworkForceEquilibrium.cpp)
 target_link_libraries(TendomerNetworkForceEquilibrium LeMonADE CommandlineParser )
+
+add_executable(TendomerNetworkExtractActivePart TendomerNetworkExtractActivePart.cpp)
+target_link_libraries(TendomerNetworkExtractActivePart LeMonADE CommandlineParser )
+
+
+# add_executable(IntramolecularReactions IntramolecularReactions.cpp)
+# target_link_libraries(IntramolecularReactions LeMonADE CommandlineParser )

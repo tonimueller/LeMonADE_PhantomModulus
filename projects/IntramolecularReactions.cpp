@@ -43,7 +43,6 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE/feature/FeatureBox.h>
 #include <LeMonADE/feature/FeatureLabel.h>
 #include <LeMonADE/utility/TaskManager.h>
-#include <LeMonADE/utility/RandomNumberGenerators.h>
 
 #include <extern/catchorg/clara/clara.hpp>
 
@@ -60,20 +59,21 @@ int main(int argc, char* argv[]){
 		///////////////////////////////////////////////////////////////////////////////
 		///parse options///
 		std::string inputBFM("init.bfm");
-		std::string outputDataPos("CrosslinkPosition.dat");
-		std::string outputDataDist("ChainExtensionDistribution.dat");
-		// std::string inputConnection("BondCreationBreaking.dat");
+		std::string outputData("IntramolecularReactions.dat");
+		std::string inputConnection("BondCreationBreaking.dat");
 		std::string feCurve("");
 		double relaxationParameter(10.);
 		double threshold(0.5);
-		// double stepwidth(1.0);
-		// double minConversion(50.0);
+		double stepwidth(1.0);
+		double minConversion(50.0);
 		
 		bool showHelp = false;
 		auto parser
 			= clara::detail::Opt(            inputBFM, "inputBFM (=inconfig.bfm)"                        ) ["-i"]["--input"          ] ("(required)Input filename of the bfm file"                                    ).required()
-			| clara::detail::Opt(       outputDataPos, "outputDataPos (=CrosslinkPosition.dat)"          ) ["-o"]["--outputPos"      ] ("(optional) Output filename of the crosslink ID and the equilibrium Position.").optional()
-			| clara::detail::Opt(      outputDataDist, "outputDataDist (=ChainExtensionDistribution.dat)") ["-c"]["--outputDist"     ] ("(optional) Output filename of the chain extension distribution."             ).optional()
+			| clara::detail::Opt(     inputConnection, "inputConnection (=BondCreationBreaking.dat)"     ) ["-d"]["--inputConnection"] ("used for the time development of the topology. "                             ).required()
+			| clara::detail::Opt(          outputData, "outputData (=IntramolecularReactions.dat)"       ) ["-o"]["--outputData"      ] ("(optional) Output filename of the crosslink ID and the equilibrium Position.").optional()
+			| clara::detail::Opt(           stepwidth, "stepwidth"                                       ) ["-s"]["--stepwidth"      ] ("(optional) Width for the increase in percentage. Default: 1%."               ).optional()
+			| clara::detail::Opt(       minConversion, "minConversion"                                   ) ["-u"]["--minConversion"  ] ("(optional) Minimum conversion to be read in. Default: 50%."                  ).optional()
 			| clara::detail::Opt(           threshold, "threshold"                                       ) ["-t"]["--threshold"      ] ("(optional) Threshold of the average shift. Default 0.5 ."                    ).optional()
 			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"        ] ("(optional) Force-Extension curve. Default \"\"."                             ).required()
 			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"          ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
@@ -89,14 +89,15 @@ int main(int argc, char* argv[]){
 	      parser.writeToStream(std::cout);
 	      exit(0);
 	    }else{
-	      std::cout << "outputData            : " << outputDataPos          << std::endl;
-	      std::cout << "outputDataDist        : " << outputDataDist         << std::endl;
+	      std::cout << "outputData            : " << outputData             << std::endl;
 	      std::cout << "inputBFM              : " << inputBFM               << std::endl; 
+	      std::cout << "inputConnection       : " << inputConnection        << std::endl; 
+	      std::cout << "stepwidth             : " << stepwidth              << std::endl;
+	      std::cout << "minConversion         : " << minConversion          << std::endl;
 	      std::cout << "threshold             : " << threshold              << std::endl; 
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
 	    }
-		RandomNumberGenerators rng;
-		rng.seedAll();
+		
 		///////////////////////////////////////////////////////////////////////////////
 		///end options parsing
 		///////////////////////////////////////////////////////////////////////////////
@@ -129,7 +130,7 @@ int main(int argc, char* argv[]){
 		myIngredients2.setPeriodicZ(myIngredients.isPeriodicZ());
 		myIngredients2.modifyMolecules().resize(myIngredients.getMolecules().size());
 		myIngredients2.modifyMolecules().setAge(myIngredients.getMolecules().getAge());
-        
+
         myIngredients2.setNumTendomers           (myIngredients.getNumTendomers());
 		myIngredients2.setNumCrossLinkers        (myIngredients.getNumCrossLinkers());
 		myIngredients2.setNumMonomersPerChain    (myIngredients.getNumMonomersPerChain());
@@ -149,12 +150,8 @@ int main(int argc, char* argv[]){
 
 		TaskManager taskmanager2;
 		//read bonds and positions stepwise
-        auto updater = new UpdaterForceBalancedPositionTendomer<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
-        updater->setFilename(feCurve);
-        updater->setRelaxationParameter(relaxationParameter);
-        // auto updater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
-        taskmanager2.addUpdater( updater );
-		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
+		taskmanager2.addUpdater( new UpdaterReadCrosslinkConnectionsTendomer<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
+        taskmanager2.addAnalyzer(new AnalyzerIntramolecularReactions<Ing2>(myIngredients2, outputData));
 		//initialize and run
 		taskmanager2.initialize();
 		taskmanager2.run();
