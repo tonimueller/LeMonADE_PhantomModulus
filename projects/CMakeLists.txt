@@ -9,5 +9,8 @@ add_executable(TendomerNetworkExtractActivePart TendomerNetworkExtractActivePart
 target_link_libraries(TendomerNetworkExtractActivePart LeMonADE CommandlineParser )
 
 
+add_executable(TendomerNetworkWritePartialConnectedNetwork TendomerNetworkWritePartialConnectedNetwork.cpp)
+target_link_libraries(TendomerNetworkWritePartialConnectedNetwork LeMonADE CommandlineParser )
+
 # add_executable(IntramolecularReactions IntramolecularReactions.cpp)
 # target_link_libraries(IntramolecularReactions LeMonADE CommandlineParser )
