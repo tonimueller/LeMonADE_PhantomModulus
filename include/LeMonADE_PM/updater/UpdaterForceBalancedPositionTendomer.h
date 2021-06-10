@@ -68,6 +68,7 @@ private:
 template <class IngredientsType, class moveType>
 bool UpdaterForceBalancedPositionTendomer<IngredientsType,moveType>::execute(){
     std::cout << "UpdaterForceBalancedPositionTendomer::execute(): Start equilibration" <<std::endl;
+    auto counter=0;
     double avShift(threshold*1.1);
     uint32_t StartMCS(ing.getMolecules().getAge());
     setRelaxationParameter(relaxationParameter);
@@ -89,8 +90,12 @@ bool UpdaterForceBalancedPositionTendomer<IngredientsType,moveType>::execute(){
         }
         if( NSuccessfulMoves>0 ){
             avShift/=(NSuccessfulMoves);
-        }else 
+            counter=0;
+        }else {
             avShift=threshold*1.1;
+            counter++;
+        }
+        if (counter > 10 ){break;}
         ing.modifyMolecules().setAge(ing.getMolecules().getAge()+1);
         if (ing.getMolecules().getAge() %1000 == 0 ){
             std::cout << "MCS: " << ing.getMolecules().getAge() << "  and average shift: " << avShift << std::endl;
