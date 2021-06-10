@@ -62,12 +62,10 @@ int main(int argc, char* argv[]){
 		std::string inputBFM("init.bfm");
 		std::string outputDataPos("CrosslinkPosition.dat");
 		std::string outputDataDist("ChainExtensionDistribution.dat");
-		// std::string inputConnection("BondCreationBreaking.dat");
 		std::string feCurve("");
 		double relaxationParameter(10.);
 		double threshold(0.5);
-		// double stepwidth(1.0);
-		// double minConversion(50.0);
+		double factor(0.995);
 		
 		bool showHelp = false;
 		auto parser
@@ -77,6 +75,7 @@ int main(int argc, char* argv[]){
 			| clara::detail::Opt(           threshold, "threshold"                                       ) ["-t"]["--threshold"      ] ("(optional) Threshold of the average shift. Default 0.5 ."                    ).optional()
 			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"        ] ("(optional) Force-Extension curve. Default \"\"."                             ).required()
 			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"          ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
+			| clara::detail::Opt(              factor, "factor (=10)"                                    ) ["-a"]["--factor"         ] ("(optional) Factor for reducing the relaxation parameter after 1000MCS. Default .995 .").optional()
 			| clara::Help( showHelp );
 		
 	    auto result = parser.parse( clara::Args( argc, argv ) );
@@ -94,6 +93,7 @@ int main(int argc, char* argv[]){
 	      std::cout << "inputBFM              : " << inputBFM               << std::endl; 
 	      std::cout << "threshold             : " << threshold              << std::endl; 
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
+		  std::cout << "factor                : " << factor                << std::endl;
 	    }
 		RandomNumberGenerators rng;
 		rng.seedAll();
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]){
 
 		TaskManager taskmanager2;
 		//read bonds and positions stepwise
-        auto updater = new UpdaterForceBalancedPositionTendomer<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
+        auto updater = new UpdaterForceBalancedPositionTendomer<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold, factor) ;
         updater->setFilename(feCurve);
         updater->setRelaxationParameter(relaxationParameter);
         // auto updater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;

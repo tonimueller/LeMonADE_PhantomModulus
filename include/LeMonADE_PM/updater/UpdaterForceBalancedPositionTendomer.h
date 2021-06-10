@@ -40,8 +40,8 @@ class UpdaterForceBalancedPositionTendomer:public AbstractUpdater
 {
 public:
     //! constructor for UpdaterForceBalancedPositionTendomer
-    UpdaterForceBalancedPositionTendomer(IngredientsType& ing_, double threshold_ ):
-    ing(ing_),threshold(threshold_){};
+    UpdaterForceBalancedPositionTendomer(IngredientsType& ing_, double threshold_, double factor_=0.995 ):
+    ing(ing_),threshold(threshold_),factor(factor_){};
     
     virtual void initialize(){relaxationParameter=move.getRelaxationParameter();}// init(move);};
     bool execute();
@@ -57,6 +57,8 @@ private:
     double threshold;
 
     double relaxationParameter;
+
+    double factor;
     
     //! move to equilibrate the cross links by force equilibrium
     moveType move;
@@ -99,7 +101,7 @@ bool UpdaterForceBalancedPositionTendomer<IngredientsType,moveType>::execute(){
         ing.modifyMolecules().setAge(ing.getMolecules().getAge()+1);
         if (ing.getMolecules().getAge() %1000 == 0 ){
             std::cout << "MCS: " << ing.getMolecules().getAge() << "  and average shift: " << avShift << std::endl;
-            setRelaxationParameter(move.getRelaxationParameter()*0.995 );
+            setRelaxationParameter(move.getRelaxationParameter()*factor );
         }
     }
     std::cout << "Finish equilibration with average shift per cross link < " << avShift << " after " << ing.getMolecules().getAge()-StartMCS <<std::endl;
