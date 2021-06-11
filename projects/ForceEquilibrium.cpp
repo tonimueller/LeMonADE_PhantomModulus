@@ -62,12 +62,12 @@ int main(int argc, char* argv[]){
 		std::string outputDataPos("CrosslinkPosition.dat");
 		std::string outputDataDist("ChainExtensionDistribution.dat");
 		std::string inputConnection("BondCreationBreaking.dat");
-		std::string feCurve("");
-		double relaxationParameter(10.);
+		// std::string feCurve("");
+		// double relaxationParameter(10.);
 		double threshold(0.5);
 		double stepwidth(1.0);
 		double minConversion(50.0);
-		bool custom(false);
+		// bool custom(true);
 		
 		bool showHelp = false;
 		auto parser
@@ -78,8 +78,8 @@ int main(int argc, char* argv[]){
 			| clara::detail::Opt(           stepwidth, "stepwidth"                                       ) ["-s"]["--stepwidth"      ] ("(optional) Width for the increase in percentage. Default: 1%."               ).optional()
 			| clara::detail::Opt(       minConversion, "minConversion"                                   ) ["-u"]["--minConversion"  ] ("(optional) Minimum conversion to be read in. Default: 50%."                  ).optional()
 			| clara::detail::Opt(           threshold, "threshold"                                       ) ["-t"]["--threshold"      ] ("(optional) Threshold of the average shift. Default 0.5 ."                    ).optional()
-			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"        ] ("(optional) Force-Extension curve. Default \"\"."                             ).optional()
-			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"          ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
+			// | clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"        ] ("(optional) Force-Extension curve. Default \"\"."                             ).optional()
+			// | clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"          ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
 			| clara::Help( showHelp );
 		
 	    auto result = parser.parse( clara::Args( argc, argv ) );
@@ -99,9 +99,9 @@ int main(int argc, char* argv[]){
 	      std::cout << "stepwidth             : " << stepwidth              << std::endl;
 	      std::cout << "minConversion         : " << minConversion          << std::endl;
 	      std::cout << "threshold             : " << threshold              << std::endl; 
-		  std::cout << "feCurve               : " << feCurve                << std::endl;
+		//   std::cout << "feCurve               : " << feCurve                << std::endl;
 	    }
-		if (! feCurve.empty()) custom=true;
+		// if (! feCurve.empty()) custom=false;
 		
 
 		RandomNumberGenerators rng;
@@ -159,14 +159,14 @@ int main(int argc, char* argv[]){
 		TaskManager taskmanager2;
 		//read bonds and positions stepwise
 		taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
-		if (custom) 
+		// if (custom) 
 			taskmanager2.addUpdater( new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) );
-		else {
-			auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
-			updater->setFilename(feCurve);
-			updater->setRelaxationParameter(relaxationParameter);
-			taskmanager2.addUpdater( updater );
-		}
+		// else {
+		// 	auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
+		// 	updater->setFilename(feCurve);
+		// 	updater->setRelaxationParameter(relaxationParameter);
+		// 	taskmanager2.addUpdater( updater );
+		// }
 		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
 		//initialize and run
 		taskmanager2.initialize();
