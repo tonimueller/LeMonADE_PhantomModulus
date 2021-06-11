@@ -81,13 +81,13 @@ bool UpdaterForceBalancedPosition<IngredientsType,moveType>::execute(){
                 NSuccessfulMoves++;
             }
         }
-        if( NSuccessfulMoves>0 ){
-            avShift/=(NSuccessfulMoves);
-        }else 
-            avShift=threshold*1.1;
+        // if( NSuccessfulMoves>0 ){
+        //     avShift/=(NSuccessfulMoves);
+        // }else 
+        //     avShift=threshold*1.1;
         ing.modifyMolecules().setAge(ing.getMolecules().getAge()+1);
         if (ing.getMolecules().getAge() %1000 == 0 ){
-            std::cout << "MCS: " << ing.getMolecules().getAge() << "  and average shift: " << avShift << std::endl;
+            std::cout << "MCS: " << ing.getMolecules().getAge() << "  and average shift: " << avShift << " succesfull moves= "<<NSuccessfulMoves<< std::endl;
         }
     }
     std::cout << "Finish equilibration with average shift per cross link < " << avShift << " after " << ing.getMolecules().getAge()-StartMCS <<std::endl;
