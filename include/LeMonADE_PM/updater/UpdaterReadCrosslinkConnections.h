@@ -24,6 +24,8 @@ You should have received a copy of the GNU General Public License
 along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 --------------------------------------------------------------------------------*/
+#ifndef LEMONADE_PM_UPDATER_UPDATERREADCROSSLINKCONNECTIONS_H 
+#define LEMONADE_PM_UPDATER_UPDATERREADCROSSLINKCONNECTIONS_H
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -208,3 +210,5 @@ bool UpdaterReadCrosslinkConnections<IngredientsType>::execute(){
         return true;
     }
 }
+
+#endif 

@@ -24,6 +24,8 @@ You should have received a copy of the GNU General Public License
 along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 --------------------------------------------------------------------------------*/
+#ifndef LEMONADE_PM_UPDATER_UPDATERREADCROSSLINKCONNECTIONSTENDOMER_H 
+#define LEMONADE_PM_UPDATER_UPDATERREADCROSSLINKCONNECTIONSTENDOMER_H
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -145,17 +147,11 @@ template <class IngredientsType>
 bool UpdaterReadCrosslinkConnectionsTendomer<IngredientsType>::execute(){
     //reset the ingredients container to the inital one
     ing = initialIng;
-    //open input file to the connection table 
-    //! stream reading input file
+    //stream reading input file
     std::ifstream stream;
     stream.open(input);
     if (stream.fail())
       throw std::runtime_error(std::string("error opening input file ") + input + std::string("\n"));
-    bool findStartofData(false);
-    std::string line;
-    getline(stream, line);
-    while (line.empty() || line.at(0) == '#' ) 
-        getline(stream, line);
     //current conversion 
     auto conversion = minConversion + static_cast<double>(nExecutions) * stepwidth;
     std::cout << "Current conversion is " <<conversion <<std::endl;
@@ -168,12 +164,15 @@ bool UpdaterReadCrosslinkConnectionsTendomer<IngredientsType>::execute(){
     while (NewConnections < ReadNLines && stream.good()){
         std::string line;
         getline(stream, line);
-        if (line.empty())
-            break;
+        if (line.empty() || line.at(0) == '#' )
+            continue;
         std::stringstream ss;
         uint32_t Time, createBreak, ChainID, nSegments, MonID1, P1X, P1Y, P1Z, MonID2, P2X, P2Y, P2Z;
         ss << line;
         ss >> Time >> createBreak>>  ChainID >> nSegments >>MonID1 >> P1X >> P1Y >> P1Z >> MonID2 >> P2X >> P2Y >> P2Z;
+        #ifdef DEBUG
+            std::cout << ss.str() << std::endl;
+        #endif //DEBUG//
         ing.modifyMolecules().setAge(Time);
         if ( ConnectCrossLinkToChain(MonID1, ChainID+1) ) {
         }else if( ConnectCrossLinkToChain(MonID2, ChainID+1) ) {
@@ -199,3 +198,5 @@ bool UpdaterReadCrosslinkConnectionsTendomer<IngredientsType>::execute(){
         return true;
     }
 }
+
+#endif

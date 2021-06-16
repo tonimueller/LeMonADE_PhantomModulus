@@ -112,7 +112,6 @@ int main(int argc, char* argv[]){
 		taskmanager.cleanup();
 		std::cout << "Read in conformation and go on to bring it into equilibrium forces..." <<std::endl;
         // activeObjects are first all cross links and afterwards all chain: 0-sol, 1-gel/pending, 2-active 
-        std::vector<bool> activeObject;
         std::ifstream in(activeComponent);
         std::string line;
 
@@ -135,7 +134,9 @@ int main(int argc, char* argv[]){
 				auto tmpAttribute(0);
 				if(objectID < nCrossLinks ){
 					auto IdX(nChainMonomers+objectID);
-					// std::cout << "OId=" << objectID << " IdX=" << IdX << std::endl;
+					#ifdef DEBUG
+						std::cout <<  objectID << " "  << activeTag <<  " " << IdX <<  " " << IdX << std::endl;
+					#endif
 					if (activeTag == 2 ){
 						tmpAttribute=1;	
 						nActiveCrossLinks++;
@@ -144,7 +145,9 @@ int main(int argc, char* argv[]){
 				}else{
 					auto IdCStart((objectID-nCrossLinks)*nSegments);
 					auto IdCEnd( (objectID-nCrossLinks+1)*nSegments-1);
-					// std::cout << "OId=" << objectID << " IdC=" << IdCStart << "-" << IdCEnd << std::endl;
+					#ifdef DEBUG
+						std::cout << objectID << " "  << activeTag <<" " << IdCStart << " " << IdCEnd << std::endl;
+					#endif
 					if (activeTag == 2 ) {
 						nActiveTendomers++;
 						tmpAttribute=1;
@@ -189,6 +192,19 @@ int main(int argc, char* argv[]){
 		}		
 
 		myIngredients.synchronize();
+		// auto BoxX(myIngredients.getBoxX());
+		// auto BoxY(myIngredients.getBoxY());
+		// auto BoxZ(myIngredients.getBoxZ());
+		// for (auto i=nActiveTendomers*2*myIngredients.getNumMonomersPerChain(); i < myIngredients.getMolecules().size(); i++ ){
+		// 	auto vec(myIngredients.getMolecules()[i].getVector3D());
+		// 	auto new_vec(vec);
+		// 	new_vec.setAllCoordinates( LemonadeDistCalcs::fold(vec.getX(),BoxX), 
+		// 		 					   LemonadeDistCalcs::fold(vec.getX(),BoxY),
+		// 							   LemonadeDistCalcs::fold(vec.getX(),BoxZ));
+		// 	myIngredients.modifyMolecules()[i].modifyVector3D() = new_vec;
+		// }
+		// myIngredients.synchronize();
+
 		TaskManager taskmanager2;
 		taskmanager2.addAnalyzer( new AnalyzerWriteBfmFile<Ing >(outputBFM, myIngredients, 1) ); 
 		//initialize and run
