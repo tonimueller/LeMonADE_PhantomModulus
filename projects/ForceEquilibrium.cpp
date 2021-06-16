@@ -169,12 +169,12 @@ int main(int argc, char* argv[]){
 		} else {
 			std::cout << "Use gaussian force-extension relation\n";
 			auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold);
-			// taskmanager2.addUpdater( forceUpdater );
+			taskmanager2.addUpdater( forceUpdater );
 		}
 		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
 		//initialize and run
 		taskmanager2.initialize();
-		taskmanager2.run();
+		taskmanager2.run(1);
 		taskmanager2.cleanup();
 		
 	}
