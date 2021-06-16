@@ -47,7 +47,9 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 class MoveForceEquilibrium:public MoveForceEquilibriumBase<MoveForceEquilibrium>{
 public:
-    MoveForceEquilibrium():bondlength(2.68){};
+    MoveForceEquilibrium():bondlength(2.68){
+      std::cout << "Use the MoveForceEquilibrium\n";
+    };
 
     // overload initialise function to be able to set the moves index and direction if neccessary
     template <class IngredientsType> void init(const IngredientsType& ing);
@@ -57,6 +59,14 @@ public:
     template <class IngredientsType> bool check(IngredientsType& ing);
     template< class IngredientsType> void apply(IngredientsType& ing);
 
+    void setFilename(std::string filename_){}
+    //! get the filename for the force extension data 
+    std::string const getFilename(){}
+    
+    //! set the relaxation parameter for the cross link
+    void setRelaxationParameter(double relaxationChain_){}
+    //! get the relaxation parameter for the cross link 
+    double getRelaxationParameter(){}
 private:
     //average square bond length 
     const double bondlength;

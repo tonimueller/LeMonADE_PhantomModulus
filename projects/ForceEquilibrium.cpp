@@ -157,26 +157,34 @@ int main(int argc, char* argv[]){
 		myIngredients2.synchronize();
 		
 		
-		TaskManager taskmanager2;
-		//read bonds and positions stepwise
-		taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
+
 		if(custom){
+			TaskManager taskmanager2;
+			//read bonds and positions stepwise
+			taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
 			std::cout << "Use custom force-extension curve\n";
 			auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold);
 			forceUpdater->setFilename(feCurve);
 			forceUpdater->setRelaxationParameter(relaxationParameter);	
 			taskmanager2.addUpdater( forceUpdater );
+			taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
+			//initialize and run
+			taskmanager2.initialize();
+			taskmanager2.run(1);
+			taskmanager2.cleanup();
 		} else {
+			TaskManager taskmanager2;
+			//read bonds and positions stepwise
+			taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
 			std::cout << "Use gaussian force-extension relation\n";
 			auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold);
 			taskmanager2.addUpdater( forceUpdater );
+			taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
+			//initialize and run
+			taskmanager2.initialize();
+			taskmanager2.run(1);
+			taskmanager2.cleanup();
 		}
-		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
-		//initialize and run
-		taskmanager2.initialize();
-		taskmanager2.run(1);
-		taskmanager2.cleanup();
-		
 	}
 	catch(std::exception& e){
 		std::cerr<<"Error:\n"
