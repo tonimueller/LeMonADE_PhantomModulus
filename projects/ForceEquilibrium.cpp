@@ -160,7 +160,8 @@ int main(int argc, char* argv[]){
 		//read bonds and positions stepwise
 		taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
 		// if (custom) 
-			taskmanager2.addUpdater( new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) );
+			// taskmanager2.addUpdater( new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) );
+			taskmanager2.addUpdater( new UpdaterForceBalancedPositionTendomer<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) );
 		// else {
 		// 	auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
 		// 	updater->setFilename(feCurve);
