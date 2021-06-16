@@ -62,7 +62,7 @@ int main(int argc, char* argv[]){
 		std::string outputDataPos("CrosslinkPosition.dat");
 		std::string outputDataDist("ChainExtensionDistribution.dat");
 		std::string inputConnection("BondCreationBreaking.dat");
-		std::string feCurve("");
+		std::string feCurve;
 		double relaxationParameter(10.);
 		double threshold(0.5);
 		double stepwidth(1.0);
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]){
 	      std::cout << "threshold             : " << threshold              << std::endl; 
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
 	    }
-		if (! feCurve.empty()) custom=false;
+		if ( feCurve.empty() ) custom=false;
 		
 
 		RandomNumberGenerators rng;
@@ -161,15 +161,15 @@ int main(int argc, char* argv[]){
 		//read bonds and positions stepwise
 		taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
 		if(custom){
+			std::cout << "Use custom force-extension curve\n";
 			auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold);
 			forceUpdater->setFilename(feCurve);
 			forceUpdater->setRelaxationParameter(relaxationParameter);	
 			taskmanager2.addUpdater( forceUpdater );
 		} else {
+			std::cout << "Use gaussian force-extension relation\n";
 			auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold);
-			forceUpdater->setFilename(feCurve);
-			forceUpdater->setRelaxationParameter(relaxationParameter);	
-			taskmanager2.addUpdater( forceUpdater );
+			// taskmanager2.addUpdater( forceUpdater );
 		}
 		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
 		//initialize and run
