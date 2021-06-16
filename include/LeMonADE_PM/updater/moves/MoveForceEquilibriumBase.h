@@ -88,6 +88,16 @@ class MoveForceEquilibriumBase:public MoveBase
 	{
 		ShiftVector.setAllCoordinates(dx,dy,dz);
 	}
+
+    void setFilename(std::string filename_){static_cast<SpecializedMove*>(this)->setFilename(ingredients);}
+    //! get the filename for the force extension data 
+    std::string const getFilename(){static_cast<SpecializedMove*>(this)->getFilename(ingredients);}
+    
+    //! set the relaxation parameter for the cross link
+    void setRelaxationParameter(double relaxationChain_){static_cast<SpecializedMove*>(this)->setRelaxationParameter(ingredients);}
+    //! get the relaxation parameter for the cross link 
+    double getRelaxationParameter(){static_cast<SpecializedMove*>(this)->getRelaxationParameter(ingredients);} 
+
 	//! Random Number Generator (RNG)
 	RandomNumberGenerators randomNumbers;
 
