@@ -50,7 +50,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <extern/catchorg/clara/clara.hpp>
 
-#include <LeMonADE_PM/updater/UpdaterForceBalancedPositionTendomer.h>
+
 #include <LeMonADE_PM/updater/UpdaterReadCrosslinkConnectionsTendomer.h>
 #include <LeMonADE_PM/updater/moves/MoveForceEquilibrium.h>
 #include <LeMonADE_PM/updater/moves/MoveNonLinearForceEquilibrium.h>
