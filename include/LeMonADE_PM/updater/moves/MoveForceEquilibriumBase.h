@@ -98,6 +98,7 @@ class MoveForceEquilibriumBase:public MoveBase
     //! get the relaxation parameter for the cross link 
     double getRelaxationParameter(){static_cast<SpecializedMove*>(this)->getRelaxationParameter();} 
 
+
 	//! Random Number Generator (RNG)
 	RandomNumberGenerators randomNumbers;
 
