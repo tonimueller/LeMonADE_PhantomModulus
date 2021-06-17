@@ -51,7 +51,7 @@ class MoveNonLinearForceEquilibrium:public MoveForceEquilibriumBase<MoveNonLinea
 public:
     //! constructor for the class MoveNonLinearForceEquilibrium taking the filename of the force extension relation and the realaxation parameter for the chain 
     MoveNonLinearForceEquilibrium(std::string filename_="", double relaxationChain_=1.):
-        filename(filename_),bondlength(2.68){
+        filename(filename_),bondlength(2.68), accuracy(0.25) {
             if( !filename.empty() ) createTable();
             setRelaxationParameter(relaxationChain_);
         };
@@ -81,13 +81,14 @@ public:
     }
     //! get the relaxation parameter for the cross link 
     double getRelaxationParameter(){return relaxationChain;} 
+
     //uses the read force extension relation 
     VectorDouble3 EF(VectorDouble3 extensionVector){
-        uint32_t length( static_cast<uint32_t>(round(extensionVector.getLength())) );
-        if ( max_extension < length ){
+        uint32_t length( static_cast<uint32_t>(round(extensionVector.getLength()/accuracy)) );
+        if ( max_extension/accuracy < length ){
             std::stringstream errormessage; 
             errormessage << "The length of the extension vector is greater than the maximum given in the file: \n"
-                         << "length is  " << length 
+                         << "length is  " << length*accuracy 
                          << " maximum is " << max_extension << "\n";
             throw std::runtime_error(errormessage.str());
         }
@@ -121,6 +122,9 @@ private:
     double max_extension;
     //extension steps 
     double extension_steps;
+
+    //the accuracy is the steps in which the extensions vector grows
+    double accuracy; 
 
     //spring constant for the equivalent chain used for the relaxation of the cross links 
     double springConstant;
@@ -189,13 +193,13 @@ void MoveNonLinearForceEquilibrium::createTable(){
         in.close();
         //make lookup for the extension force relation 
         //make a entry from 0 to max_extension in steps of 1 
-        for ( auto r=0;r<static_cast<uint32_t>(max_extension); r++   ){
+        for ( auto r=0;r<static_cast<uint32_t>(max_extension/accuracy); r++   ){
             if(r==0)
                 force_extension.push_back(0.);
             else{
                 auto it_last=extension_force.begin();
                 for (auto it=extension_force.begin(); it !=extension_force.end();it++){
-                    if(it->second > r){
+                    if(it->second > static_cast<double>(r*accuracy)){
                         //at the force linear interpolated in between the two current forces
                         auto deltaForce(it->first-it_last->first);
                         auto deltaExtension(it->second-it_last->second);
