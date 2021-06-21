@@ -106,21 +106,13 @@ public:
          <<  EFGauss(extensionVector) << "\t"<< extensionVector.normalize()*(force_extension[static_cast<uint32_t>(round(length/accuracy))])<<"\t"  
         << "\n"; 
         #endif 
-        // if (length < 1 ) 
-        //     return EFGauss(extensionVector); 
-        // if (length < 0.001 ) 
-        //     return VectorDouble3(0.,0.,0.);
         if (length == 0)
             return VectorDouble3(0.,0.,0.);
         auto x(length/accuracy);
-        auto up (static_cast<uint32_t>(floor((length)/accuracy)+1));
-        auto down(static_cast<uint32_t>(floor(length/accuracy)));
+        auto up (static_cast<uint32_t>(ceil(x)+1 ));
+        auto down(static_cast<uint32_t>(floor(x)));
         auto amplitude=force_extension[down] + (force_extension[up]-force_extension[down])/static_cast<double>(up-down)*(x-down)/static_cast<double>(up-down);
-        // std::cout<< "amp=" <<  amplitude<< std::endl;
-        // extensionVector.normalize();
         return extensionVector.normalize()*(amplitude);
-        // return extensionVector.normalize()*(force_extension[static_cast<uint32_t>(round(length/accuracy))]);
-
     }
     //Gaussina force extension relation 
     //f=R*3/(N*b^2)
@@ -159,7 +151,7 @@ private:
     //spring constant for the equivalent chain used for the relaxation of the cross links 
     double springConstant;
    
-    //force extension mapping        // std::cout<< "amp=" <<  amplitude<< std::endl;
+    //force extension mapping       
     std::map<double, double> extension_force;
     //extension force mapping index=extension rounded to int 
     std::vector<double> force_extension;
@@ -170,9 +162,7 @@ private:
     VectorDouble3 CalculateShift(IngredientsType& ing ){
         std::vector<neighborX> Neighbors(ing.getCrossLinkNeighborIDs(this->getIndex()) );
         VectorDouble3 force(0.,0.,0.);
-        // VectorDouble3 force2(0.,0.,0.); 
         VectorDouble3 shift(0.,0.,0.);
-        // VectorDouble3 shift2(0.,0.,0.);
         double avNSegments(0.);
         int32_t number_of_neighbors(Neighbors.size());
         if (number_of_neighbors > 0) {
@@ -180,32 +170,8 @@ private:
             for (size_t i = 0; i < number_of_neighbors; i++){
                 VectorDouble3 vec(ing.getMolecules()[Neighbors[i].ID].getVector3D()-Neighbors[i].jump-Position);
                 force+=EF(vec);
-                // force2+=EFGauss(vec);
-                // if (ing.getMolecules().getAge()%1000 == 999 && ing.getMolecules().getAge()>49000)
-                			// stream.precision(std::numeric_limits<typename ResultType::value_type::value_type>::max_digits10);
-			// stream.setf( std::ios::fixed, std:: ios::floatfield );	
-                    // std::cout   << std::setprecision(10)
-                    //     // << setf( std::ios::fixed, std:: ios::floatfield )
-                    //             << vec.getLength() << "\n" 
-                    //             << ing.getMolecules()[Neighbors[i].ID].getVector3D()<< "\n" 
-                    //             << Neighbors[i].jump<< "\n" 
-                    //             << Position <<"\n" ;
             }
             shift=FE(force/(static_cast<double>(number_of_neighbors) ));
-            // shift2=FE(force2/(static_cast<double>(number_of_neighbors) ));
-            // if (ing.getMolecules().getAge()%1000 == 999 && ing.getMolecules().getAge()>49000)
-                // if(shift.getLength()  > .001 ){
-                    // std::cout << "i="<<this->getIndex() <<" "
-                                // << shift  <<" " <<shift.getLength() << " "
-                                // << force  <<" " <<force.getLength() << " "
-                                // << shift2  <<" " <<shift2.getLength() << " "
-                                // << force2  <<" " <<force2.getLength() << " "        // std::cout<< "amp=" <<  amplitude<< std::endl;
-                                // <<"dR= " << FE(force).getLength() <<" " 
-                                // <<"df= " << EF(shift).getLength()<<" " 
-                                // <<"df_gauss= " << EFGauss(shift).getLength()<<" " 
-                                // << std::endl;
-                // }
-            // if (shift.getLength() < 0.001 ) shift*=0.;
         }
         return shift;
     };
