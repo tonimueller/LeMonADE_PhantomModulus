@@ -75,7 +75,7 @@ public:
 	std::vector< std::vector<double> >  CalculateDistance();
 
 	//! just collects the id and the position for the cross links 
-	std::vector<std::vector<int> > CollectAveragePositions();
+	std::vector<std::vector<double> > CollectAveragePositions();
 };
 
 /*************************************************************************
@@ -128,8 +128,8 @@ std::vector< std::vector<double> >  AnalyzerEquilbratedPosition<IngredientsType>
 }
 ////////////////////////////////////////////////////////////////////////////////
 template< class IngredientsType >
-std::vector< std::vector<int> >  AnalyzerEquilbratedPosition<IngredientsType>::CollectAveragePositions(){
-	std::vector<std::vector<int> > AveragePosition(4, std::vector<int>());
+std::vector< std::vector<double> >  AnalyzerEquilbratedPosition<IngredientsType>::CollectAveragePositions(){
+	std::vector<std::vector<double> > AveragePosition(4, std::vector<double>());
 	auto crosslinkID(ingredients.getCrosslinkIDs());
 	for (size_t i = 0 ; i < crosslinkID.size(); i++){
 		auto IDx(crosslinkID[i]);
@@ -189,7 +189,7 @@ void AnalyzerEquilbratedPosition<IngredientsType>::dumpData()
 	std::cout << "////////////////////////////////////"<<std::endl;	
 
 	//output for the equilibrated positions 
-	std::vector< std::vector<int> > CrossLinkPositions=CollectAveragePositions() ;
+	std::vector< std::vector<double> > CrossLinkPositions=CollectAveragePositions() ;
 	std::stringstream commentAveragePosition;
 	commentAveragePosition<<"Created by AnalyzerEquilbratedPosition\n";
 	commentAveragePosition<<"ID's start at 0 \n";
