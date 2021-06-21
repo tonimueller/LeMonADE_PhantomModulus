@@ -47,7 +47,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 class MoveForceEquilibrium:public MoveForceEquilibriumBase<MoveForceEquilibrium>{
 public:
-    MoveForceEquilibrium():bondlength(2.68){
+    MoveForceEquilibrium():bondlength2(2.68*2.68){
       std::cout << "Use the MoveForceEquilibrium\n";
     };
 
@@ -69,17 +69,18 @@ public:
     double getRelaxationParameter(){}
 private:
     //average square bond length 
-    const double bondlength;
+    const double bondlength2;
+    //
 
     //Gaussina force extension relation 
     //f=R*3/(N*b^2)
     VectorDouble3 FE(VectorDouble3 extensionVector, double nSegs){
-        return extensionVector*3./((nSegs)*bondlength*bondlength);
+        return extensionVector*3./((nSegs)*bondlength2);
     }
     //Gaussian extension force relation 
     //R=-f/3*N*b^2
     VectorDouble3 EF(VectorDouble3 force, double nSegs){
-        return force/(3.)*(nSegs)*bondlength*bondlength;
+        return force/(3.)*(nSegs)*bondlength2;
     }
 
     //calculate the shift for the cross link

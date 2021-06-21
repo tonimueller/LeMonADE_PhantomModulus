@@ -51,7 +51,7 @@ class MoveNonLinearForceEquilibrium:public MoveForceEquilibriumBase<MoveNonLinea
 public:
     //! constructor for the class MoveNonLinearForceEquilibrium taking the filename of the force extension relation and the realaxation parameter for the chain 
     MoveNonLinearForceEquilibrium(std::string filename_="", double relaxationChain_=1.):
-        filename(filename_),bondlength(2.68), accuracy(0.25) {
+        filename(filename_),bondlength(2.68), accuracy(.001) {
             if( !filename.empty() ) createTable();
             setRelaxationParameter(relaxationChain_);
         };
@@ -77,25 +77,46 @@ public:
     //! set the relaxation parameter for the cross link
     void setRelaxationParameter(double relaxationChain_){
         relaxationChain=relaxationChain_;
-        springConstant = relaxationChain*bondlength*bondlength/(-3.);
+        springConstant = relaxationChain*bondlength*bondlength/(3.);
+        std::cout << "Set relaxation parameter to " << relaxationChain << " corresponding to a spring constant " <<springConstant <<std::endl;
     }
     //! get the relaxation parameter for the cross link 
     double getRelaxationParameter(){return relaxationChain;} 
 
     //uses the read force extension relation 
     VectorDouble3 EF(VectorDouble3 extensionVector){
-        uint32_t length( static_cast<uint32_t>(round(extensionVector.getLength()/accuracy)) );
-        if ( max_extension/accuracy < length ){
+        if (extensionVector == VectorDouble3(0.,0.,0.) )
+            return VectorDouble3(0.,0.,0.);
+        double length( extensionVector.getLength() );
+
+        #ifdef DEBUG
+        if ( max_extension < length  ){
             std::stringstream errormessage; 
             errormessage << "The length of the extension vector is greater than the maximum given in the file: \n"
-                         << "length is  " << length*accuracy 
+                         << "length is  " << length 
                          << " maximum is " << max_extension << "\n";
             throw std::runtime_error(errormessage.str());
         }
         if (length == 0 )
             return VectorDouble3(0.,0.,0.);
-        return force_extension[length]*extensionVector.normalize();
+        #endif
+        #ifdef DEBUG
+        std::cout <<length << "\t" << force_extension[static_cast<uint32_t>(round(length/accuracy))] << "\t" << EFGauss(extensionVector).getLength() << "\t" 
+         << extensionVector << "\t" 
+         <<  EFGauss(extensionVector) << "\t"<< extensionVector.normalize()*(force_extension[static_cast<uint32_t>(round(length/accuracy))])<<"\t"  
+        << "\n"; 
+        #endif 
+        if (length < 1 ) 
+            return EFGauss(extensionVector); 
+        // if (length < 0.001 ) 
+        //     return VectorDouble3(0.,0.,0.);
+        return extensionVector.normalize()*(force_extension[static_cast<uint32_t>(round(length/accuracy))]);
 
+    }
+    //Gaussina force extension relation 
+    //f=R*3/(N*b^2)
+    VectorDouble3 EFGauss(VectorDouble3 extensionVector){
+        return extensionVector/springConstant;
     }
     //Gaussian extension force relation 
     //R=-f/3*N*b^2
@@ -124,7 +145,7 @@ private:
     double extension_steps;
 
     //the accuracy is the steps in which the extensions vector grows
-    double accuracy; 
+    const double accuracy; 
 
     //spring constant for the equivalent chain used for the relaxation of the cross links 
     double springConstant;
@@ -140,16 +161,35 @@ private:
     VectorDouble3 CalculateShift(IngredientsType& ing ){
         std::vector<neighborX> Neighbors(ing.getCrossLinkNeighborIDs(this->getIndex()) );
         VectorDouble3 force(0.,0.,0.);
+        // VectorDouble3 force2(0.,0.,0.);
         VectorDouble3 shift(0.,0.,0.);
+        // VectorDouble3 shift2(0.,0.,0.);
         double avNSegments(0.);
-        if (Neighbors.size() > 0) {
+        int32_t number_of_neighbors(Neighbors.size());
+        if (number_of_neighbors > 0) {
             VectorDouble3 Position(ing.getMolecules()[this->getIndex()].getVector3D());      
-            for (size_t i = 0; i < Neighbors.size(); i++){
-                VectorDouble3 vec(Position-ing.getMolecules()[Neighbors[i].ID].getVector3D()+Neighbors[i].jump);
-                // std::cout << Position << " " << ing.getMolecules()[Neighbors[i].ID].getVector3D() << " " << Neighbors[i].jump <<"\n";
-                force+=EF(vec);//Neighbors[i].segDistance
+            for (size_t i = 0; i < number_of_neighbors; i++){
+                VectorDouble3 vec(ing.getMolecules()[Neighbors[i].ID].getVector3D()-Neighbors[i].jump-Position);
+                force+=EF(vec);
+                // force2+=EFGauss(vec);
+                if (ing.getMolecules().getAge()%1000 == 999 && ing.getMolecules().getAge()>49000)
+                    std::cout << vec.getLength() << " " << ing.getMolecules()[Neighbors[i].ID].getVector3D()<< " " << Neighbors[i].jump<< " " << Position <<" " ;
             }
-            shift=FE(force/(static_cast<double>(Neighbors.size()) ));
+            shift=FE(force/(static_cast<double>(number_of_neighbors) ));
+            // shift2=FE(force2/(static_cast<double>(number_of_neighbors) ));
+            if (ing.getMolecules().getAge()%1000 == 999 && ing.getMolecules().getAge()>49000)
+                // if(shift.getLength()  > .001 ){
+                    std::cout << "i="<<this->getIndex() <<" "
+                                << shift  <<" " <<shift.getLength() << " "
+                                // << force  <<" " <<force.getLength() << " "
+                                // << shift2  <<" " <<shift2.getLength() << " "
+                                // << force2  <<" " <<force2.getLength() << " "
+                                // <<"dR= " << FE(force).getLength() <<" " 
+                                // <<"df= " << EF(shift).getLength()<<" " 
+                                // <<"df_gauss= " << EFGauss(shift).getLength()<<" " 
+                                << std::endl;
+                // }
+            // if (shift.getLength() < 0.001 ) shift*=0.;
         }
         return shift;
     };
@@ -193,17 +233,17 @@ void MoveNonLinearForceEquilibrium::createTable(){
         in.close();
         //make lookup for the extension force relation 
         //make a entry from 0 to max_extension in steps of 1 
+        auto it_last=extension_force.begin();
         for ( auto r=0;r<static_cast<uint32_t>(max_extension/accuracy); r++   ){
             if(r==0)
                 force_extension.push_back(0.);
             else{
-                auto it_last=extension_force.begin();
-                for (auto it=extension_force.begin(); it !=extension_force.end();it++){
+                for (auto it=it_last; it !=extension_force.end();it++){
                     if(it->second > static_cast<double>(r*accuracy)){
                         //at the force linear interpolated in between the two current forces
                         auto deltaForce(it->first-it_last->first);
                         auto deltaExtension(it->second-it_last->second);
-                        auto factor( (static_cast<double>(r)-it_last->second)/deltaExtension );
+                        auto factor( (static_cast<double>(r*accuracy)-it_last->second)/deltaExtension );
                         //at interpolated force
                         force_extension.push_back(it_last->first+deltaForce*factor);
                         break;
@@ -213,8 +253,8 @@ void MoveNonLinearForceEquilibrium::createTable(){
             }
         }
         std::cout << "MoveNonLinearForceEquilibrium::createTable() force extension" <<std::endl;
-        for (auto i =0; i < 10; i ++ )
-            std::cout << i << "\t" << force_extension[i]<<std::endl;
+        for (auto i=0; i<40; i++ )
+            std::cout << "FECurve: " << i << "\t" << i*accuracy<< "\t" << force_extension[i]<<std::endl;
 
         std::cout << "MoveNonLinearForceEquilibrium::createTable(): \n" 
                 << "min_force=" << min_force <<"\n"
