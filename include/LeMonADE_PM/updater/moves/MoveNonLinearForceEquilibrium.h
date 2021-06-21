@@ -109,8 +109,8 @@ public:
         if (length == 0)
             return VectorDouble3(0.,0.,0.);
         auto x(length/accuracy);
-        auto up (static_cast<uint32_t>(ceil(x)+1 ));
         auto down(static_cast<uint32_t>(floor(x)));
+        auto up (down+1);
         auto amplitude=force_extension[down] + (force_extension[up]-force_extension[down])/static_cast<double>(up-down)*(x-down)/static_cast<double>(up-down);
         return extensionVector.normalize()*(amplitude);
     }

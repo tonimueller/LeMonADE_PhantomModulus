@@ -70,7 +70,7 @@ private:
 template <class IngredientsType, class moveType>
 bool UpdaterForceBalancedPosition<IngredientsType,moveType>::execute(){
     std::cout << "UpdaterForceBalancedPosition::execute(): Start equilibration" <<std::endl;
-    double avShift(0.0);
+    double avShift(threshold*1.1);
     uint32_t StartMCS(ing.getMolecules().getAge());
     setRelaxationParameter(relaxationParameter);
     //! get look up table for the cross link ids to monomer ids
@@ -78,12 +78,15 @@ bool UpdaterForceBalancedPosition<IngredientsType,moveType>::execute(){
     //! number of cross links 
     auto NCrossLinks(CrossLinkIDs.size());
     while (avShift > threshold  ){
+        double NSuccessfulMoves(0.);
+        avShift=0.0;
         for (uint32_t i =0 ; i<NCrossLinks ; i++){
             uint32_t RandomMonomer(CrossLinkIDs[ rng.r250_rand32() % NCrossLinks]);
             move.init(ing, RandomMonomer);
             if(move.check(ing)){
                 move.apply(ing);
                 avShift+=move.getShiftVector().getLength();
+                NSuccessfulMoves++;
             }
         }
         ing.modifyMolecules().setAge(ing.getMolecules().getAge()+1);
