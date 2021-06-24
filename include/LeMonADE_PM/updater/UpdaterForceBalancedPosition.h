@@ -41,9 +41,9 @@ class UpdaterForceBalancedPosition:public AbstractUpdater
 public:
     //! constructor for UpdaterForceBalancedPosition
     UpdaterForceBalancedPosition(IngredientsType& ing_, double threshold_, double factor_=0.995 ):
-    ing(ing_),threshold(threshold_),factor(factor_),relaxationParameter(1.0){};
+    ing(ing_),threshold(threshold_),relaxationParameter(1.0){};
     
-    virtual void initialize(){relaxationParameter=move.getRelaxationParameter();}// init(move);};
+    virtual void initialize(){};
     bool execute();
     virtual void cleanup(){};  
 
@@ -56,10 +56,6 @@ private:
     //! threshold for the certainty 
     double threshold;
 
-    double relaxationParameter;
-
-    double factor;
-    
     //! move to equilibrate the cross links by force equilibrium
     moveType move;
     
@@ -72,7 +68,6 @@ bool UpdaterForceBalancedPosition<IngredientsType,moveType>::execute(){
     std::cout << "UpdaterForceBalancedPosition::execute(): Start equilibration" <<std::endl;
     double avShift(threshold*1.1);
     uint32_t StartMCS(ing.getMolecules().getAge());
-    setRelaxationParameter(relaxationParameter);
     //! get look up table for the cross link ids to monomer ids
     auto CrossLinkIDs(ing.getCrosslinkIDs());
     //! number of cross links 

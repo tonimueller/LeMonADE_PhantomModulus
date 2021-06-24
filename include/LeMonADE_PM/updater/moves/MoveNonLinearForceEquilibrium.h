@@ -65,10 +65,6 @@ public:
 
     //!read file to create a lookup table of the force extension curve 
     void createTable();
-    // //!read file to create a lookup table of the force extension curve 
-    // void createTable(std::string filename_){
-    //     setFilename(filename); 
-    //     createTable();}
     //! set the filename for the force extension data 
     void setFilename(std::string filename_){filename=filename_;createTable();}
     //! get the filename for the force extension data 

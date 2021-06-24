@@ -74,11 +74,13 @@ public:
 
 	//!getter function for the neighboring crosslinks
 	std::vector<neighborX> getCrossLinkNeighborIDs(uint32_t CrossLinkID) const{
+		#ifdef DEBUG
 		if (CrossLinkNeighbors.find(CrossLinkID) == CrossLinkNeighbors.end()){
 			std::stringstream errormessage;
 			errormessage << "FeatureCrosslinkConnectionsLookUp::getCrossLinkNeighborIDs Cross Link ID " << CrossLinkID <<" does not exist.";
 			throw std::runtime_error(errormessage.str());
 		}
+		#endif
 		return CrossLinkNeighbors.at(CrossLinkID);
 	};
 
