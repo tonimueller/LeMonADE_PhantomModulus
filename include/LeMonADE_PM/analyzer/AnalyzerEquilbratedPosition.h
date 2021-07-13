@@ -102,18 +102,18 @@ std::vector< std::vector<double> >  AnalyzerEquilbratedPosition<IngredientsType>
 		auto neighbors(ingredients.getCrossLinkNeighborIDs(IDx));
 		for (size_t j=0; j < neighbors.size() ;j++){
 			VectorDouble3 vec(ingredients.getMolecules()[neighbors[j].ID].getVector3D()-ingredients.getMolecules()[IDx].getVector3D()-neighbors[j].jump);
-			VectorDouble3 vec2=LemonadeDistCalcs::MinImageVector(ingredients.getMolecules()[neighbors[j].ID].getVector3D(),ingredients.getMolecules()[IDx].getVector3D(),ingredients);
-			if ( vec.getLength() != vec2.getLength()) {
-				std::stringstream error_message;
-				error_message   << "AnalyzerEquilbratedPosition:\n"
-								<< "distance from jump=(" << vec  << ") \n"
-								<< "distance from  IMC=(" << vec2 << ") \n"
-								<< "jump vector=("<< neighbors[j].jump <<") \n" 
-								<< "position1=("<<ingredients.getMolecules()[IDx].getVector3D() <<") \n"
-								<< "position2=("<<ingredients.getMolecules()[neighbors[j].ID].getVector3D() <<") \n"
-								<< std::endl;
-				throw std::runtime_error(error_message.str());
-			}
+			// VectorDouble3 vec2=LemonadeDistCalcs::MinImageVector(ingredients.getMolecules()[neighbors[j].ID].getVector3D(),ingredients.getMolecules()[IDx].getVector3D(),ingredients);
+			// if ( vec.getLength() != vec2.getLength()) {
+			// 	std::stringstream error_message;
+			// 	error_message   << "AnalyzerEquilbratedPosition:\n"
+			// 					<< "distance from jump=(" << vec  << ") \n"
+			// 					<< "distance from  IMC=(" << vec2 << ") \n"
+			// 					<< "jump vector=("<< neighbors[j].jump <<") \n" 
+			// 					<< "position1=("<<ingredients.getMolecules()[IDx].getVector3D() <<") \n"
+			// 					<< "position2=("<<ingredients.getMolecules()[neighbors[j].ID].getVector3D() <<") \n"
+			// 					<< std::endl;
+			// 	throw std::runtime_error(error_message.str());
+			// }
 			dist[0].push_back(IDx);
 			dist[1].push_back(neighbors[j].ID);
 			dist[2].push_back(vec.getX());
