@@ -46,7 +46,7 @@ class UpdaterAffineDeformation:public AbstractUpdater
 public:
     //! constructor for UpdaterAffineDeformation
     UpdaterAffineDeformation(IngredientsType& ing_, double stretching_factor_ ):
-    ing(ing_),stretching_factor(stretching_factor_),stretching_factor_XY(std::sqrt(stretching_factor)){};
+    ing(ing_),stretching_factor(stretching_factor_),stretching_factor_XY(1./std::sqrt(stretching_factor)){};
     
     virtual void initialize();
     virtual bool execute(){return false;};
