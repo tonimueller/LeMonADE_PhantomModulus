@@ -35,6 +35,8 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <cmath>
  /**
  * @class UpdaterAffineDeformation
+ * @brief This class performs a affine deformation accordign to the stretching factor (lambda)
+ * for the positions and the jump vector. 
  * @tparam IngredientsType
  */
 
@@ -43,8 +45,8 @@ class UpdaterAffineDeformation:public AbstractUpdater
 {
 public:
     //! constructor for UpdaterAffineDeformation
-    UpdaterAffineDeformation(IngredientsType& ing_, double lambda_ ):
-    ing(ing_),lambda(lambda_),labmdaYZ(std::sqrt(labmda)){};
+    UpdaterAffineDeformation(IngredientsType& ing_, double stretching_factor_ ):
+    ing(ing_),stretching_factor(stretching_factor_),stretching_factor_XY(std::sqrt(stretching_factor)){};
     
     virtual void initialize(){};
     virtual bool execute(){return false;};
@@ -55,10 +57,10 @@ private:
     IngredientsType& ing;
     
     //! threshold for the certainty 
-    double lambda;
-    double labmdaYZ;
+    double stretching_factor;
+    double stretching_factor_XY;
     void deform( VectorDouble3& vec ){
-        vec.setAllCoordinates(vec.getX()*lambda,vec.getY()*labmdaYZ,vec.getZ()*labmdaYZ);
+        vec.setAllCoordinates(vec.getX()*stretching_factor,vec.getY()*stretching_factor_XY,vec.getZ()*stretching_factor_XY);
     }
 };
 template <class IngredientsType>

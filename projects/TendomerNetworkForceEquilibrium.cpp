@@ -53,6 +53,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE_PM/updater/moves/MoveNonLinearForceEquilibrium.h>
 #include <LeMonADE_PM/feature/FeatureCrosslinkConnectionsLookUpTendomers.h>
 #include <LeMonADE_PM/analyzer/AnalyzerEquilbratedPosition.h>
+#include <LeMonADE_PM/updater/UpdaterAffineDeformation.h>
 
 
 int main(int argc, char* argv[]){
@@ -66,16 +67,18 @@ int main(int argc, char* argv[]){
 		double relaxationParameter(10.);
 		double threshold(0.5);
 		double factor(0.995);
+		double stretching_factor(1.0);
 		
 		bool showHelp = false;
 		auto parser
-			= clara::detail::Opt(            inputBFM, "inputBFM (=inconfig.bfm)"                        ) ["-i"]["--input"          ] ("(required)Input filename of the bfm file"                                    ).required()
-			| clara::detail::Opt(       outputDataPos, "outputDataPos (=CrosslinkPosition.dat)"          ) ["-o"]["--outputPos"      ] ("(optional) Output filename of the crosslink ID and the equilibrium Position.").optional()
-			| clara::detail::Opt(      outputDataDist, "outputDataDist (=ChainExtensionDistribution.dat)") ["-c"]["--outputDist"     ] ("(optional) Output filename of the chain extension distribution."             ).optional()
-			| clara::detail::Opt(           threshold, "threshold"                                       ) ["-t"]["--threshold"      ] ("(optional) Threshold of the average shift. Default 0.5 ."                    ).optional()
-			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"        ] ("(optional) Force-Extension curve. Default \"\"."                             ).required()
-			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"          ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
-			| clara::detail::Opt(              factor, "factor (=10)"                                    ) ["-a"]["--factor"         ] ("(optional) Factor for reducing the relaxation parameter after 1000MCS. Default .995 .").optional()
+			= clara::detail::Opt(            inputBFM, "inputBFM (=inconfig.bfm)"                        ) ["-i"]["--input"            ] ("(required)Input filename of the bfm file"                                    ).required()
+			| clara::detail::Opt(       outputDataPos, "outputDataPos (=CrosslinkPosition.dat)"          ) ["-o"]["--outputPos"        ] ("(optional) Output filename of the crosslink ID and the equilibrium Position.").optional()
+			| clara::detail::Opt(      outputDataDist, "outputDataDist (=ChainExtensionDistribution.dat)") ["-c"]["--outputDist"       ] ("(optional) Output filename of the chain extension distribution."             ).optional()
+			| clara::detail::Opt(           threshold, "threshold"                                       ) ["-t"]["--threshold"        ] ("(optional) Threshold of the average shift. Default 0.5 ."                    ).optional()
+			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"          ] ("(optional) Force-Extension curve. Default \"\"."                             ).required()
+			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"            ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
+			| clara::detail::Opt(              factor, "factor (=10)"                                    ) ["-a"]["--factor"           ] ("(optional) Factor for reducing the relaxation parameter after 1000MCS. Default .995 .").optional()
+			| clara::detail::Opt(   stretching_factor, "stretching_factor (=1)"                          ) ["-l"]["--stretching_factor"] ("(optional) Stretching factor for uniaxial deformation. Default 1.0 ."        ).optional()
 			| clara::Help( showHelp );
 		
 	    auto result = parser.parse( clara::Args( argc, argv ) );
@@ -93,7 +96,8 @@ int main(int argc, char* argv[]){
 	      std::cout << "inputBFM              : " << inputBFM               << std::endl; 
 	      std::cout << "threshold             : " << threshold              << std::endl; 
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
-		  std::cout << "factor                : " << factor                << std::endl;
+		  std::cout << "factor                : " << factor                 << std::endl;
+		  std::cout << "stretching_factor     : " << stretching_factor      << std::endl;
 	    }
 		RandomNumberGenerators rng;
 		rng.seedAll();
@@ -148,6 +152,7 @@ int main(int argc, char* argv[]){
 		myIngredients2.synchronize();
 
 		TaskManager taskmanager2;
+		taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing>(myIngredients2, stretching_factor) );
 		//read bonds and positions stepwise
         auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold, factor) ;
         updater->setFilename(feCurve);
