@@ -77,7 +77,11 @@ void UpdaterAffineDeformation<IngredientsType>::initialize(){
         int32_t number_of_neighbors(Neighbors.size());
         if (number_of_neighbors > 0) {
             for (size_t j = 0; j < number_of_neighbors; j++){
-                Neighbors[j].jump= deform(Neighbors[j].jump);    
+                if (i < 20 ) 
+                    std::cout << "ID= "<< i << "initial jump   " << Neighbors[j].jump << " ";  
+                Neighbors[j].jump= deform(Neighbors[j].jump);   
+                if (i < 20 ) 
+                    std::cout << "ID= "<< i << "defrormed jump " << Neighbors[j].jump << "\n";   
             }
         }
     }

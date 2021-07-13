@@ -84,7 +84,9 @@ public:
         if (extensionVector == VectorDouble3(0.,0.,0.) )
             return VectorDouble3(0.,0.,0.);
         double length( extensionVector.getLength() );
-
+        if ( max_extension < length  ){
+            return EFGauss(extensionVector); 
+        }
         #ifdef DEBUG
         if ( max_extension < length  ){
             std::stringstream errormessage; 
@@ -165,6 +167,7 @@ private:
             VectorDouble3 Position(ing.getMolecules()[this->getIndex()].getVector3D());      
             for (size_t i = 0; i < number_of_neighbors; i++){
                 VectorDouble3 vec(ing.getMolecules()[Neighbors[i].ID].getVector3D()-Neighbors[i].jump-Position);
+                // std::cout << ing.getMolecules()[Neighbors[i].ID].getVector3D() << " " << Neighbors[i].jump<< " " << Position <<std::endl;
                 force+=EF(vec);
             }
             shift=FE(force/(static_cast<double>(number_of_neighbors) ));
