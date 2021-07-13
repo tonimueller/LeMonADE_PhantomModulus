@@ -63,6 +63,7 @@ private:
 };
 template <class IngredientsType>
 void UpdaterAffineDeformation<IngredientsType>::initialize(){
+    std::cout << "UpdaterAffineDeformation<IngredientsType>::initialize():\n";
     //adjusting the box size is not neccessary, because it is used only once in the FeatureCrosslinkConnections*
     //there the jump vectors are calculated
     
@@ -70,18 +71,25 @@ void UpdaterAffineDeformation<IngredientsType>::initialize(){
     auto CrossLinkIDs(ing.getCrosslinkIDs());
     for (uint32_t i =0 ; i<CrossLinkIDs.size() ; i++){
         uint32_t ID(CrossLinkIDs[i]);
+        if (i < 20 ) 
+            std::cout << "initial jump " << ing.getMolecules()[ID].getVector3D() << " ";  
         std::vector<neighborX> Neighbors(ing.getCrossLinkNeighborIDs(ID );
         int32_t number_of_neighbors(Neighbors.size());
         if (number_of_neighbors > 0) {
             deform(Neighbors[i].jump);
         }
-
+        if (i < 20 ) 
+            std::cout << "deformed jump " << ing.getMolecules()[ID].getVector3D() << "\n";  
     }
 
     //The initial posistions of all monomers needs to be adjusted according the deformation labmda! 
     for(size_t i = 0; i< myIngredients.getMolecules().size();i++){
+        if (i < 20 ) 
+            std::cout << "initial position " << ing.getMolecules()[ID].getVector3D() << " ";  
         deform(ing.modifyMolecules()[i].modifyVector3D());
+        if (i < 20 ) 
+            std::cout << "deformed position " << ing.getMolecules()[ID].getVector3D() << "\n";  
     }
-    return false;
+    std::cout << "UpdaterAffineDeformation<IngredientsType>::initialize():done.\n";
 }
 #endif /*LEMONADE_PM_UPDATER_UPDATERAFFINEDEFORMATION_H*/
