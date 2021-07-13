@@ -59,13 +59,13 @@ private:
     //! threshold for the certainty 
     double stretching_factor;
     double stretching_factor_XY;
-    void deform( VectorDouble3& vec ){
-        vec.setAllCoordinates(vec.getX()*stretching_factor,vec.getY()*stretching_factor_XY,vec.getZ()*stretching_factor_XY);
+    VectorDouble3 deform( VectorDouble3 vec ){
+        return VectorDouble3(vec.getX()*stretching_factor,vec.getY()*stretching_factor_XY,vec.getZ()*stretching_factor_XY);
     }
 };
 template <class IngredientsType>
 void UpdaterAffineDeformation<IngredientsType>::initialize(){
-    std::cout << "UpdaterAffineDeformation<IngredientsType>::initialize():\n";
+    std::cout << "UpdaterAffineDeformation<IngredientsType>::initialize():"<< std::endl;
     //adjusting the box size is not neccessary, because it is used only once in the FeatureCrosslinkConnections*
     //there the jump vectors are calculated
     
@@ -78,7 +78,7 @@ void UpdaterAffineDeformation<IngredientsType>::initialize(){
         std::vector<neighborX> Neighbors(ing.getCrossLinkNeighborIDs(ID) );
         int32_t number_of_neighbors(Neighbors.size());
         if (number_of_neighbors > 0) {
-            deform(Neighbors[i].jump);
+            Neighbors[i].jump= deform(Neighbors[i].jump);
         }
         if (i < 20 ) 
             std::cout << "deformed jump " << ing.getMolecules()[ID].getVector3D() << "\n";  
@@ -88,7 +88,7 @@ void UpdaterAffineDeformation<IngredientsType>::initialize(){
     for(size_t i = 0; i< ing.getMolecules().size();i++){
         if (i < 20 ) 
             std::cout << "ID="<< i << "initial position " << ing.getMolecules()[i].getVector3D() << " ";  
-        deform(ing.modifyMolecules()[i].modifyVector3D());
+        ing.modifyMolecules()[i].modifyVector3D()=deform(ing.modifyMolecules()[i].getVector3D());
         if (i < 20 ) 
             std::cout << "deformed position " << ing.getMolecules()[i].getVector3D() << "\n";  
     }
