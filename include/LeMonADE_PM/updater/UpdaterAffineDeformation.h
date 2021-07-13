@@ -73,15 +73,13 @@ void UpdaterAffineDeformation<IngredientsType>::initialize(){
     auto CrossLinkIDs(ing.getCrosslinkIDs());
     for (uint32_t i =0 ; i<CrossLinkIDs.size() ; i++){
         uint32_t ID(CrossLinkIDs[i]);
-        if (i < 20 ) 
-            std::cout << "ID="<< i << "initial jump " << ing.getMolecules()[ID].getVector3D() << " ";  
         std::vector<neighborX> Neighbors(ing.getCrossLinkNeighborIDs(ID) );
         int32_t number_of_neighbors(Neighbors.size());
         if (number_of_neighbors > 0) {
-            Neighbors[i].jump= deform(Neighbors[i].jump);
+            for (size_t j = 0; j < number_of_neighbors; j++){
+                Neighbors[j].jump= deform(Neighbors[j].jump);    
+            }
         }
-        if (i < 20 ) 
-            std::cout << "deformed jump " << ing.getMolecules()[ID].getVector3D() << "\n";  
     }
 
     //The initial posistions of all monomers needs to be adjusted according the deformation labmda! 
