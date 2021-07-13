@@ -152,7 +152,7 @@ int main(int argc, char* argv[]){
 		myIngredients2.synchronize();
 
 		TaskManager taskmanager2;
-		taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing>(myIngredients2, stretching_factor) );
+		taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor) );
 		//read bonds and positions stepwise
         auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold, factor) ;
         updater->setFilename(feCurve);

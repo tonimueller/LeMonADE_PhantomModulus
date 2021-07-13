@@ -48,7 +48,7 @@ public:
     UpdaterAffineDeformation(IngredientsType& ing_, double stretching_factor_ ):
     ing(ing_),stretching_factor(stretching_factor_),stretching_factor_XY(std::sqrt(stretching_factor)){};
     
-    virtual void initialize(){};
+    virtual void initialize();
     virtual bool execute(){return false;};
     virtual void cleanup(){};  
 
@@ -74,8 +74,8 @@ void UpdaterAffineDeformation<IngredientsType>::initialize(){
     for (uint32_t i =0 ; i<CrossLinkIDs.size() ; i++){
         uint32_t ID(CrossLinkIDs[i]);
         if (i < 20 ) 
-            std::cout << "initial jump " << ing.getMolecules()[ID].getVector3D() << " ";  
-        std::vector<neighborX> Neighbors(ing.getCrossLinkNeighborIDs(ID );
+            std::cout << "ID="<< i << "initial jump " << ing.getMolecules()[ID].getVector3D() << " ";  
+        std::vector<neighborX> Neighbors(ing.getCrossLinkNeighborIDs(ID) );
         int32_t number_of_neighbors(Neighbors.size());
         if (number_of_neighbors > 0) {
             deform(Neighbors[i].jump);
@@ -85,12 +85,12 @@ void UpdaterAffineDeformation<IngredientsType>::initialize(){
     }
 
     //The initial posistions of all monomers needs to be adjusted according the deformation labmda! 
-    for(size_t i = 0; i< myIngredients.getMolecules().size();i++){
+    for(size_t i = 0; i< ing.getMolecules().size();i++){
         if (i < 20 ) 
-            std::cout << "initial position " << ing.getMolecules()[ID].getVector3D() << " ";  
+            std::cout << "ID="<< i << "initial position " << ing.getMolecules()[i].getVector3D() << " ";  
         deform(ing.modifyMolecules()[i].modifyVector3D());
         if (i < 20 ) 
-            std::cout << "deformed position " << ing.getMolecules()[ID].getVector3D() << "\n";  
+            std::cout << "deformed position " << ing.getMolecules()[i].getVector3D() << "\n";  
     }
     std::cout << "UpdaterAffineDeformation<IngredientsType>::initialize():done.\n";
 }

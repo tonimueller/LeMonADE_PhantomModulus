@@ -41,7 +41,7 @@ class UpdaterForceBalancedPosition:public AbstractUpdater
 public:
     //! constructor for UpdaterForceBalancedPosition
     UpdaterForceBalancedPosition(IngredientsType& ing_, double threshold_, double factor_=0.995 ):
-    ing(ing_),threshold(threshold_),relaxationParameter(1.0){};
+    ing(ing_),threshold(threshold_){};
     
     virtual void initialize(){};
     bool execute();
