@@ -46,7 +46,11 @@ class UpdaterAffineDeformation:public AbstractUpdater
 public:
     //! constructor for UpdaterAffineDeformation
     UpdaterAffineDeformation(IngredientsType& ing_, double stretching_factor_ ):
-    ing(ing_),stretching_factor(stretching_factor_),stretching_factor_XY(1./std::sqrt(stretching_factor)){};
+    ing(ing_),stretching_factor(stretching_factor_),stretching_factor_XY(1./std::sqrt(stretching_factor)){
+        std::cout << "UpdaterAffineDeformation::constructor:\n"
+                  << "stretching factor =       " << stretching_factor    << "\n"
+                  << "stretching factor in yz = " << stretching_factor_XY << "\n";
+    };
     
     virtual void initialize();
     virtual bool execute(){return false;};
@@ -60,6 +64,7 @@ private:
     double stretching_factor;
     double stretching_factor_XY;
     VectorDouble3 deform( VectorDouble3 vec ){
+
         return VectorDouble3(vec.getX()*stretching_factor,vec.getY()*stretching_factor_XY,vec.getZ()*stretching_factor_XY);
     }
 };
@@ -78,10 +83,10 @@ void UpdaterAffineDeformation<IngredientsType>::initialize(){
         if (number_of_neighbors > 0) {
             for (size_t j = 0; j < number_of_neighbors; j++){
                 if (i < 20 ) 
-                    std::cout << "ID= "<< i << "initial jump   " << Neighbors[j].jump << " ";  
-                Neighbors[j].jump= deform(Neighbors[j].jump);   
+                    std::cout << "ID= "<< i << " initial jump " << Neighbors[j].jump << " ";  
+                ing.setCrossLinkNeighborJump(ID,j,deform(Neighbors[j].jump));   
                 if (i < 20 ) 
-                    std::cout << "ID= "<< i << "defrormed jump " << Neighbors[j].jump << "\n";   
+                    std::cout << "ID= "<< i << " defromed jump " << Neighbors[j].jump << "\n";   
             }
         }
     }
@@ -90,9 +95,9 @@ void UpdaterAffineDeformation<IngredientsType>::initialize(){
     for(size_t i = 0; i< ing.getMolecules().size();i++){
         if (i < 20 ) 
             std::cout << "ID="<< i << "initial position " << ing.getMolecules()[i].getVector3D() << " ";  
-        ing.modifyMolecules()[i].modifyVector3D()=deform(ing.modifyMolecules()[i].getVector3D());
+        ing.modifyMolecules()[i].modifyVector3D()=deform(ing.getMolecules()[i].getVector3D());
         if (i < 20 ) 
-            std::cout << "deformed position " << ing.getMolecules()[i].getVector3D() << "\n";  
+            std::cout << " deformed position " << ing.getMolecules()[i].getVector3D() << "\n";  
     }
     std::cout << "UpdaterAffineDeformation<IngredientsType>::initialize():done.\n";
 }

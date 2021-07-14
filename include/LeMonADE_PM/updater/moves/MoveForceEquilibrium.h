@@ -96,6 +96,7 @@ private:
                 VectorDouble3 vec(ing.getMolecules()[Neighbors[i].ID].getVector3D()-Position-Neighbors[i].jump);
                 avNSegments+=1./Neighbors[i].segDistance;
                 force+=FE(vec,Neighbors[i].segDistance);
+                // std::cout <<"MoveLFE " <<  ing.getMolecules()[Neighbors[i].ID].getVector3D() << "\t" << Neighbors[i].jump<< "\t" << Position << "\t" << vec << "\t" << force << std::endl;
             }
             shift=EF(force,1./avNSegments);
         }

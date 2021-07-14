@@ -82,6 +82,16 @@ public:
 		return CrossLinkNeighbors.at(CrossLinkID);
 	};
 
+	//! set the jump vector 
+	void setCrossLinkNeighborJump(uint32_t CrossLinkID, uint32_t idx, VectorDouble3 vec) {
+		if ( idx > CrossLinkNeighbors.at(CrossLinkID).size() ){
+			std::stringstream errormessage;
+			errormessage << "FeatureCrosslinkConnectionsLookUpTendomers::setCrossLinkNeighborJump neighbor idx  " << idx <<" is to high.";
+			throw std::runtime_error(errormessage.str());
+		}
+		CrossLinkNeighbors.at(CrossLinkID)[idx].jump=vec;
+	}
+
 	//!get the ID of crosslinks (determined by nConnections>3 and connected to another crosslink)
 	const std::vector<uint32_t>& getCrosslinkIDs() const {return crosslinkIDs;}
 

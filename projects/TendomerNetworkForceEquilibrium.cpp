@@ -100,6 +100,7 @@ int main(int argc, char* argv[]){
 		  std::cout << "stretching_factor     : " << stretching_factor      << std::endl;
 	    }
 		RandomNumberGenerators rng;
+		// rng.seedDefaultValuesAll();
 		rng.seedAll();
 		///////////////////////////////////////////////////////////////////////////////
 		///end options parsing
@@ -152,12 +153,12 @@ int main(int argc, char* argv[]){
 		myIngredients2.synchronize();
 
 		TaskManager taskmanager2;
-		taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor) );
+		taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
 		//read bonds and positions stepwise
-        auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold, factor) ;
-        updater->setFilename(feCurve);
-        updater->setRelaxationParameter(relaxationParameter);
-        // auto updater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
+        // auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold, factor) ;
+        // updater->setFilename(feCurve);
+        // updater->setRelaxationParameter(relaxationParameter);
+        auto updater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
         taskmanager2.addUpdater( updater );
 		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
 		//initialize and run
