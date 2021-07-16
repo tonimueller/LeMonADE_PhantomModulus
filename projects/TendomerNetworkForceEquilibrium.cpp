@@ -68,6 +68,8 @@ int main(int argc, char* argv[]){
 		double threshold(0.5);
 		double factor(0.995);
 		double stretching_factor(1.0);
+		bool gauss(false);
+		bool langevin(false);
 		
 		bool showHelp = false;
 		auto parser
@@ -75,10 +77,11 @@ int main(int argc, char* argv[]){
 			| clara::detail::Opt(       outputDataPos, "outputDataPos (=CrosslinkPosition.dat)"          ) ["-o"]["--outputPos"        ] ("(optional) Output filename of the crosslink ID and the equilibrium Position.").optional()
 			| clara::detail::Opt(      outputDataDist, "outputDataDist (=ChainExtensionDistribution.dat)") ["-c"]["--outputDist"       ] ("(optional) Output filename of the chain extension distribution."             ).optional()
 			| clara::detail::Opt(           threshold, "threshold"                                       ) ["-t"]["--threshold"        ] ("(optional) Threshold of the average shift. Default 0.5 ."                    ).optional()
+			| clara::detail::Opt(   stretching_factor, "stretching_factor (=1)"                          ) ["-l"]["--stretching_factor"] ("(optional) Stretching factor for uniaxial deformation. Default 1.0 ."        ).optional()
 			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"          ] ("(optional) Force-Extension curve. Default \"\"."                             ).required()
 			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"            ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
-			| clara::detail::Opt(              factor, "factor (=10)"                                    ) ["-a"]["--factor"           ] ("(optional) Factor for reducing the relaxation parameter after 1000MCS. Default .995 .").optional()
-			| clara::detail::Opt(   stretching_factor, "stretching_factor (=1)"                          ) ["-l"]["--stretching_factor"] ("(optional) Stretching factor for uniaxial deformation. Default 1.0 ."        ).optional()
+			| clara::detail::Opt(               gauss, "gauss"                                           ) ["-g"]["--gauss"            ] ("(optional) Deforma with a Gaussian deformation behaviour. Default 1.0 ."     ).optional()
+			| clara::detail::Opt(            langevin, "langevin"                                        ) ["-v"]["--langevin"         ] ("(optional) Deforma with a Langevin deformation behaviour. Default 1.0 ."     ).optional()
 			| clara::Help( showHelp );
 		
 	    auto result = parser.parse( clara::Args( argc, argv ) );
@@ -96,7 +99,8 @@ int main(int argc, char* argv[]){
 	      std::cout << "inputBFM              : " << inputBFM               << std::endl; 
 	      std::cout << "threshold             : " << threshold              << std::endl; 
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
-		  std::cout << "factor                : " << factor                 << std::endl;
+		  std::cout << "gauss                 : " << gauss                  << std::endl;
+		  std::cout << "Langevin              : " << langevin               << std::endl;
 		  std::cout << "stretching_factor     : " << stretching_factor      << std::endl;
 	    }
 		RandomNumberGenerators rng;
@@ -155,10 +159,10 @@ int main(int argc, char* argv[]){
 		TaskManager taskmanager2;
 		taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
 		//read bonds and positions stepwise
-        // auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold, factor) ;
-        // updater->setFilename(feCurve);
-        // updater->setRelaxationParameter(relaxationParameter);
-        auto updater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
+        auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
+        updater->setFilename(feCurve);
+        updater->setRelaxationParameter(relaxationParameter);
+        // auto updater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
         taskmanager2.addUpdater( updater );
 		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
 		//initialize and run
