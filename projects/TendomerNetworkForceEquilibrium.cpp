@@ -69,7 +69,6 @@ int main(int argc, char* argv[]){
 		double factor(0.995);
 		double stretching_factor(1.0);
 		bool gauss(false);
-		bool langevin(false);
 		
 		bool showHelp = false;
 		auto parser
@@ -81,7 +80,6 @@ int main(int argc, char* argv[]){
 			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"          ] ("(optional) Force-Extension curve. Default \"\"."                             ).required()
 			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"            ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
 			| clara::detail::Opt(               gauss, "gauss"                                           ) ["-g"]["--gauss"            ] ("(optional) Deforma with a Gaussian deformation behaviour. Default 1.0 ."     ).optional()
-			| clara::detail::Opt(            langevin, "langevin"                                        ) ["-v"]["--langevin"         ] ("(optional) Deforma with a Langevin deformation behaviour. Default 1.0 ."     ).optional()
 			| clara::Help( showHelp );
 		
 	    auto result = parser.parse( clara::Args( argc, argv ) );
@@ -100,7 +98,6 @@ int main(int argc, char* argv[]){
 	      std::cout << "threshold             : " << threshold              << std::endl; 
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
 		  std::cout << "gauss                 : " << gauss                  << std::endl;
-		  std::cout << "Langevin              : " << langevin               << std::endl;
 		  std::cout << "stretching_factor     : " << stretching_factor      << std::endl;
 	    }
 		RandomNumberGenerators rng;
@@ -162,8 +159,14 @@ int main(int argc, char* argv[]){
         auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
         updater->setFilename(feCurve);
         updater->setRelaxationParameter(relaxationParameter);
-        // auto updater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
-        taskmanager2.addUpdater( updater );
+        auto updater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
+		if ( gauss == 0 ){
+			std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) \n";
+        	taskmanager2.addUpdater( updater );
+		}else {
+			std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) \n";
+			taskmanager2.addUpdater( updater2 );
+		}
 		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
 		//initialize and run
 		taskmanager2.initialize();

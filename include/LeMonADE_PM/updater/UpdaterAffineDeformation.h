@@ -86,7 +86,7 @@ void UpdaterAffineDeformation<IngredientsType>::initialize(){
                     std::cout << "ID= "<< i << " initial jump " << Neighbors[j].jump << " ";  
                 ing.setCrossLinkNeighborJump(ID,j,deform(Neighbors[j].jump));   
                 if (i < 20 ) 
-                    std::cout << "ID= "<< i << " defromed jump " << Neighbors[j].jump << "\n";   
+                    std::cout << "ID= "<< i << " deformed jump " << ing.getCrossLinkNeighborIDs(ID)[j].jump << "\n";   
             }
         }
     }
