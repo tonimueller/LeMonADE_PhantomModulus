@@ -61,7 +61,7 @@ int main(int argc, char* argv[]){
 		std::string inputBFM("init.bfm");
 		std::string outputDataPos("CrosslinkPosition.dat");
 		std::string outputDataDist("ChainExtensionDistribution.dat");
-		std::string inputConnection("BondCreationBreaking.dat");
+		// std::string inputConnection("BondCreationBreaking.dat");
 		std::string feCurve;
 		double relaxationParameter(10.);
 		double threshold(0.5);
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]){
 		bool showHelp = false;
 		auto parser
 			= clara::detail::Opt(            inputBFM, "inputBFM (=inconfig.bfm)"                        ) ["-i"]["--input"          ] ("(required)Input filename of the bfm file"                                    ).required()
-			| clara::detail::Opt(     inputConnection, "inputConnection (=BondCreationBreaking.dat)"     ) ["-d"]["--inputConnection"] ("used for the time development of the topology. "                             ).required()
+			// | clara::detail::Opt(     inputConnection, "inputConnection (=BondCreationBreaking.dat)"     ) ["-d"]["--inputConnection"] ("used for the time development of the topology. "                             ).required()
 			| clara::detail::Opt(       outputDataPos, "outputDataPos (=CrosslinkPosition.dat)"          ) ["-o"]["--outputPos"      ] ("(optional) Output filename of the crosslink ID and the equilibrium Position.").optional()
 			| clara::detail::Opt(      outputDataDist, "outputDataDist (=ChainExtensionDistribution.dat)") ["-c"]["--outputDist"     ] ("(optional) Output filename of the chain extension distribution."             ).optional()
 			| clara::detail::Opt(           stepwidth, "stepwidth"                                       ) ["-s"]["--stepwidth"      ] ("(optional) Width for the increase in percentage. Default: 1%."               ).optional()
@@ -95,7 +95,7 @@ int main(int argc, char* argv[]){
 	      std::cout << "outputData            : " << outputDataPos          << std::endl;
 	      std::cout << "outputDataDist        : " << outputDataDist         << std::endl;
 	      std::cout << "inputBFM              : " << inputBFM               << std::endl; 
-	      std::cout << "inputConnection       : " << inputConnection        << std::endl; 
+	    //   std::cout << "inputConnection       : " << inputConnection        << std::endl; 
 	      std::cout << "stepwidth             : " << stepwidth              << std::endl;
 	      std::cout << "minConversion         : " << minConversion          << std::endl;
 	      std::cout << "threshold             : " << threshold              << std::endl; 
@@ -161,7 +161,7 @@ int main(int argc, char* argv[]){
 		if(custom){
 			TaskManager taskmanager2;
 			//read bonds and positions stepwise
-			taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
+			// taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
 			std::cout << "Use custom force-extension curve\n";
 			auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold);
 			forceUpdater->setFilename(feCurve);
@@ -175,7 +175,7 @@ int main(int argc, char* argv[]){
 		} else {
 			TaskManager taskmanager2;
 			//read bonds and positions stepwise
-			taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
+			// taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
 			std::cout << "Use gaussian force-extension relation\n";
 			auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold);
 			taskmanager2.addUpdater( forceUpdater );

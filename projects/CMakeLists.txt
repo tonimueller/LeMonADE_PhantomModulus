@@ -1,6 +1,8 @@
 add_executable(ForceEquilibrium ForceEquilibrium.cpp)
 target_link_libraries(ForceEquilibrium LeMonADE CommandlineParser )
 
+add_executable(NetworkWritePartialConnectedNetwork NetworkWritePartialConnectedNetwork.cpp)
+target_link_libraries(NetworkWritePartialConnectedNetwork LeMonADE CommandlineParser )
 
 add_executable(TendomerNetworkForceEquilibrium TendomerNetworkForceEquilibrium.cpp)
 target_link_libraries(TendomerNetworkForceEquilibrium LeMonADE CommandlineParser )
@@ -13,6 +15,8 @@ target_link_libraries(TendomerNetworkExtractGelPart LeMonADE CommandlineParser )
 
 add_executable(TendomerNetworkWritePartialConnectedNetwork TendomerNetworkWritePartialConnectedNetwork.cpp)
 target_link_libraries(TendomerNetworkWritePartialConnectedNetwork LeMonADE CommandlineParser )
+
+
 
 # add_executable(IntramolecularReactions IntramolecularReactions.cpp)
 # target_link_libraries(IntramolecularReactions LeMonADE CommandlineParser )
