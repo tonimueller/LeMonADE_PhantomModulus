@@ -19,5 +19,8 @@ target_link_libraries(TendomerNetworkWritePartialConnectedNetwork LeMonADE Comma
 add_executable(AnalyzeMolecularWeight AnalyzeMolecularWeight.cpp)
 target_link_libraries(AnalyzeMolecularWeight LeMonADE )
 
+add_executable(IdealReferenceForceEquilibrium IdealReferenceForceEquilibrium.cpp)
+target_link_libraries(IdealReferenceForceEquilibrium LeMonADE )
+
 # add_executable(IntramolecularReactions IntramolecularReactions.cpp)
 # target_link_libraries(IntramolecularReactions LeMonADE CommandlineParser )
