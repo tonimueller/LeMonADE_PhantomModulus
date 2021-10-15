@@ -16,7 +16,8 @@ target_link_libraries(TendomerNetworkExtractGelPart LeMonADE CommandlineParser )
 add_executable(TendomerNetworkWritePartialConnectedNetwork TendomerNetworkWritePartialConnectedNetwork.cpp)
 target_link_libraries(TendomerNetworkWritePartialConnectedNetwork LeMonADE CommandlineParser )
 
-
+add_executable(AnalyzeMolecularWeight AnalyzeMolecularWeight.cpp)
+target_link_libraries(AnalyzeMolecularWeight LeMonADE )
 
 # add_executable(IntramolecularReactions IntramolecularReactions.cpp)
 # target_link_libraries(IntramolecularReactions LeMonADE CommandlineParser )
