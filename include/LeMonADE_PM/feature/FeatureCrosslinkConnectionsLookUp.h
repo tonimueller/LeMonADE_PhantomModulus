@@ -71,7 +71,15 @@ public:
 	void synchronize(IngredientsType& ingredients) {
 	  	fillTables(ingredients);
 	};
-
+    //! set the jump vector 
+	void setCrossLinkNeighborJump(uint32_t CrossLinkID, uint32_t idx, VectorDouble3 vec) {
+		if ( idx > CrossLinkNeighbors.at(CrossLinkID).size() ){
+			std::stringstream errormessage;
+			errormessage << "FeatureCrosslinkConnectionsLookUpTendomers::setCrossLinkNeighborJump neighbor idx  " << idx <<" is to high.";
+			throw std::runtime_error(errormessage.str());
+		}
+		CrossLinkNeighbors.at(CrossLinkID)[idx].jump=vec;
+	}
 	//!getter function for the neighboring crosslinks
 	std::vector<neighborX> getCrossLinkNeighborIDs(uint32_t CrossLinkID) const{
 		#ifdef DEBUG
