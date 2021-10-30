@@ -38,13 +38,14 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE/core/Ingredients.h>
 #include <LeMonADE/updater/UpdaterReadBfmFile.h>
 #include <LeMonADE/analyzer/AnalyzerWriteBfmFile.h>
-#include <LeMonADE/feature/FeatureMoleculesIOUnsaveCheck.h>
+#include <LeMonADE/feature/FeatureMoleculesIO.h>
 #include <LeMonADE/feature/FeatureReactiveBonds.h>
 #include <LeMonADE/feature/FeatureFixedMonomers.h>
 #include <LeMonADE/feature/FeatureBox.h>
-#include <LeMonADE/feature/FeatureLabel.h>
+
 #include <LeMonADE/utility/TaskManager.h>
 #include <LeMonADE/utility/RandomNumberGenerators.h>
+#include <LeMonADE/feature/FeatureSystemInformationLinearMeltWithCrosslinker.h>
 
 #include <extern/catchorg/clara/clara.hpp>
 
@@ -52,7 +53,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE_PM/updater/UpdaterReadCrosslinkConnectionsTendomer.h>
 #include <LeMonADE_PM/updater/moves/MoveForceEquilibrium.h>
 #include <LeMonADE_PM/updater/moves/MoveNonLinearForceEquilibrium.h>
-#include <LeMonADE_PM/feature/FeatureCrosslinkConnectionsLookUpTendomers.h>
+#include <LeMonADE_PM/feature/FeatureCrosslinkConnectionsLookUpIdealReference.h>
 #include <LeMonADE_PM/analyzer/AnalyzerEquilbratedPosition.h>
 #include <LeMonADE_PM/updater/UpdaterAffineDeformation.h>
 #include <LeMonADE_PM/updater/UpdaterAddStars.h>
@@ -62,7 +63,7 @@ int main(int argc, char* argv[]){
 	try{
 		///////////////////////////////////////////////////////////////////////////////
 		///parse options///
-		std::string inputBFM("init.bfm");
+		// std::string inputBFM("init.bfm");
 		std::string outputDataPos("CrosslinkPosition.dat");
 		std::string outputDataDist("ChainExtensionDistribution.dat");
 		std::string feCurve("");
@@ -70,18 +71,25 @@ int main(int argc, char* argv[]){
 		double threshold(0.5);
 		double factor(0.995);
 		double stretching_factor(1.0);
-		bool gauss(false);
-		
+		uint32_t gauss(0);
+
+        uint32_t nSegments(16);
+        uint32_t functionality(4);
+		uint32_t nRings(0);
+
 		bool showHelp = false;
 		auto parser
-			= clara::detail::Opt(            inputBFM, "inputBFM (=inconfig.bfm)"                        ) ["-i"]["--input"            ] ("(required)Input filename of the bfm file"                                    ).required()
-			| clara::detail::Opt(       outputDataPos, "outputDataPos (=CrosslinkPosition.dat)"          ) ["-o"]["--outputPos"        ] ("(optional) Output filename of the crosslink ID and the equilibrium Position.").optional()
+			// = clara::detail::Opt(            inputBFM, "inputBFM (=inconfig.bfm)"                        ) ["-i"]["--input"            ] ("(required)Input filename of the bfm file"                                    ).required()
+			= clara::detail::Opt(       outputDataPos, "outputDataPos (=CrosslinkPosition.dat)"          ) ["-o"]["--outputPos"        ] ("(optional) Output filename of the crosslink ID and the equilibrium Position.").optional()
 			| clara::detail::Opt(      outputDataDist, "outputDataDist (=ChainExtensionDistribution.dat)") ["-c"]["--outputDist"       ] ("(optional) Output filename of the chain extension distribution."             ).optional()
 			| clara::detail::Opt(           threshold, "threshold"                                       ) ["-t"]["--threshold"        ] ("(optional) Threshold of the average shift. Default 0.5 ."                    ).optional()
 			| clara::detail::Opt(   stretching_factor, "stretching_factor (=1)"                          ) ["-l"]["--stretching_factor"] ("(optional) Stretching factor for uniaxial deformation. Default 1.0 ."        ).optional()
 			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"          ] ("(optional) Force-Extension curve. Default \"\"."                             ).required()
 			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"            ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
 			| clara::detail::Opt(               gauss, "gauss"                                           ) ["-g"]["--gauss"            ] ("(optional) Deforma with a Gaussian deformation behaviour. Default 1.0 ."     ).optional()
+            | clara::detail::Opt(           nSegments, "nSegments"                                       ) ["-n"]["--nSegments"        ] ("(optional) Number of segments for the strand."                               ).optional()
+            | clara::detail::Opt(       functionality, "nStrands"                                        ) ["-s"]["--nStrands"         ] ("(optional) Functionality."                                                   ).optional()
+            | clara::detail::Opt(              nRings, "nRings"                                          ) ["-m"]["--nRings"         ] ("(optional) number of rings."                                                   ).optional()
 			| clara::Help( showHelp );
 		
 	    auto result = parser.parse( clara::Args( argc, argv ) );
@@ -90,17 +98,20 @@ int main(int argc, char* argv[]){
 	      std::cerr << "Error in command line: " << result.errorMessage() << std::endl;
 	      exit(1);
 	    }else if(showHelp == true){
-	      std::cout << "Simulator to connect linear chains with single monomers of certain functionality"<< std::endl;
+	    //   std::cout << "Simulator to connect linear chains with single monomers of certain functionality"<< std::endl;
 	      parser.writeToStream(std::cout);
 	      exit(0);
 	    }else{
 	      std::cout << "outputData            : " << outputDataPos          << std::endl;
 	      std::cout << "outputDataDist        : " << outputDataDist         << std::endl;
-	      std::cout << "inputBFM              : " << inputBFM               << std::endl; 
+	    //   std::cout << "inputBFM              : " << inputBFM               << std::endl; 
 	      std::cout << "threshold             : " << threshold              << std::endl; 
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
 		  std::cout << "gauss                 : " << gauss                  << std::endl;
 		  std::cout << "stretching_factor     : " << stretching_factor      << std::endl;
+          std::cout << "nSegments             : " << nSegments              << std::endl;
+          std::cout << "functionality         : " << functionality          << std::endl;
+          std::cout << "nRings                : " << nRings          << std::endl;
 	    }
 		RandomNumberGenerators rng;
 		// rng.seedDefaultValuesAll();
@@ -109,22 +120,28 @@ int main(int argc, char* argv[]){
 		///end options parsing
 		///////////////////////////////////////////////////////////////////////////////
 		//Read in th last Config 
-		typedef LOKI_TYPELIST_4(FeatureMoleculesIOUnsaveCheck, FeatureLabel, FeatureReactiveBonds,FeatureFixedMonomers) Features;
+		typedef LOKI_TYPELIST_1(FeatureMoleculesIO) Features;
 		typedef ConfigureSystem<VectorInt3,Features, 7> Config;
 		typedef Ingredients<Config> Ing;
 		Ing myIngredients;
-		
+        myIngredients.setBoxX(256);
+		myIngredients.setBoxY(256);
+		myIngredients.setBoxZ(256);
+		myIngredients.setPeriodicX(1);
+		myIngredients.setPeriodicY(1);
+		myIngredients.setPeriodicZ(1);
+        myIngredients.modifyBondset().addBFMclassicBondset();
+        myIngredients.synchronize();
 		TaskManager taskmanager;
-		
-		taskmanager.addUpdater( new UpdaterAddStars<Ing>(inputBFM,myIngredients, UpdaterReadBfmFile<Ing>::READ_LAST_CONFIG_SAVE),0);
-
-		//initialize and run
+		taskmanager.addUpdater( new UpdaterAddStars<Ing>(myIngredients,1, nSegments+1 , functionality ),0);
+        taskmanager.addAnalyzer(new AnalyzerWriteBfmFile<Ing>("config.bfm", myIngredients, AnalyzerWriteBfmFile<Ing>::APPEND) );
 		taskmanager.initialize();
 		taskmanager.run(1);
 		taskmanager.cleanup();
+       
 		std::cout << "Read in conformation and go on to bring it into equilibrium forces..." <<std::endl;
 		//the foce equilibrium is reached off lattice ( no integer values for the positions )
-		typedef LOKI_TYPELIST_3(FeatureBox, FeatureCrosslinkConnectionsLookUpTendomers ,FeatureLabel) Features2;
+        typedef LOKI_TYPELIST_4(FeatureBox, FeatureCrosslinkConnectionsLookUpIdealReference ,FeatureSystemInformationLinearMeltWithCrosslinker,FeatureFixedMonomers) Features2;
 		typedef ConfigureSystem<VectorDouble3,Features2, 7> Config2;
 		typedef Ingredients<Config2> Ing2;
 		Ing2 myIngredients2;
@@ -137,42 +154,54 @@ int main(int argc, char* argv[]){
 		myIngredients2.setPeriodicZ(myIngredients.isPeriodicZ());
 		myIngredients2.modifyMolecules().resize(myIngredients.getMolecules().size());
 		myIngredients2.modifyMolecules().setAge(myIngredients.getMolecules().getAge());
-        
-        myIngredients2.setNumTendomers           (myIngredients.getNumTendomers());
-		myIngredients2.setNumCrossLinkers        (myIngredients.getNumCrossLinkers());
-		myIngredients2.setNumMonomersPerChain    (myIngredients.getNumMonomersPerChain());
-		myIngredients2.setNumLabelsPerTendomerArm(myIngredients.getNumLabelsPerTendomerArm());
+
+        myIngredients2.setNumOfChains              (functionality*1);
+		myIngredients2.setNumOfCrosslinks          (functionality+1);
+		myIngredients2.setNumOfMonomersPerChain    (nSegments);
+		myIngredients2.setNumOfMonomersPerCrosslink(1);
+		myIngredients2.setFunctionality            (functionality);
+
 		
 		for(size_t i = 0; i< myIngredients.getMolecules().size();i++){
 			myIngredients2.modifyMolecules()[i].modifyVector3D()=myIngredients.getMolecules()[i].getVector3D();
-			myIngredients2.modifyMolecules()[i].setReactive(myIngredients.getMolecules()[i].isReactive());
-			myIngredients2.modifyMolecules()[i].setNumMaxLinks(myIngredients.getMolecules()[i].getNumMaxLinks());
 			for (size_t j = 0 ; j < myIngredients.getMolecules().getNumLinks(i);j++){
 				uint32_t neighbor(myIngredients.getMolecules().getNeighborIdx(i,j));
 				if( ! myIngredients2.getMolecules().areConnected(i,neighbor) )
 					myIngredients2.modifyMolecules().connect(i,neighbor);
 			}
 		}
+        for (auto i=0; i < functionality; i ++) { 
+            uint32_t ID(1 + (i+1)*(nSegments+1) -1);
+            // if(gauss == 1 ){
+            //     rng.r250_drand()
+
+            // }
+            std::cout  << "Fixed monomers= "<< ID <<std::endl;
+            myIngredients2.modifyMolecules()[ ID ].setMovableTag(false);  
+        }
 		myIngredients2.synchronize();
 
 		TaskManager taskmanager2;
-		taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
+		// taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
 		//read bonds and positions stepwise
         auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
         updater->setFilename(feCurve);
         updater->setRelaxationParameter(relaxationParameter);
         auto updater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
 		if ( gauss == 0 ){
-			std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) \n";
+			std::cout << "IdealReferenceForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) \n";
         	taskmanager2.addUpdater( updater );
-		}else {
-			std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) \n";
+		}else if( gauss == 1 ){
+			std::cout << "IdealReferenceForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) \n";
 			taskmanager2.addUpdater( updater2 );
 		}
+        
 		taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
 		//initialize and run
 		taskmanager2.initialize();
 		taskmanager2.run();
+		if(gauss > 1)
+			taskmanager2.run(1);
 		taskmanager2.cleanup();
 		
 	}

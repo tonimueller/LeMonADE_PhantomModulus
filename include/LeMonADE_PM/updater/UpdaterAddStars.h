@@ -51,14 +51,16 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
  * @param type2_ attribute tag of "odd" monomers
  **/
 
-#include <LeMonADE/updater/UpdaterAbstractCreate.h>
+// #include <LeMonADE/updater/UpdaterAbstractCreate.h>
 #include <LeMonADE/utility/Vector3D.h>
 #include <cmath>
 
+#include <LeMonADE_PM/updater/UpdaterAbstractCreateAllBondVectors.h>
+
 template<class IngredientsType>
-class UpdaterAddStars: public UpdaterAbstractCreate<IngredientsType>
+class UpdaterAddStars: public UpdaterAbstractCreateAllBonds<IngredientsType>
 {
-  typedef UpdaterAbstractCreate<IngredientsType> BaseClass;
+  typedef UpdaterAbstractCreateAllBonds<IngredientsType> BaseClass;
 
 public:
   UpdaterAddStars(IngredientsType& ingredients_, uint32_t NStar_, 
@@ -67,9 +69,6 @@ public:
   virtual void initialize();
   virtual bool execute();
   virtual void cleanup();
-
-  //! getter function for write compressed solvent bool
-  const bool getIsSolvent() const {return IsSolvent;}
 
   //! getter function for number of stars
   const int32_t getNStar() const {return NStar;}
@@ -124,7 +123,7 @@ UpdaterAddStars<IngredientsType>::UpdaterAddStars(
     uint32_t NBranchPerStar_
     ):
     BaseClass(ingredients_), NStar(NStar_), NMonoPerBranch(NMonoPerBranch_), NBranchPerStar(NBranchPerStar_), 
-    density(0.0), wasExecuted(false),
+    density(0.0), wasExecuted(false)
     {}
 
 /**
@@ -153,18 +152,18 @@ template < class IngredientsType >
 bool UpdaterAddStars<IngredientsType>::execute(){
     if(wasExecuted) return true;
     std::cout << "execute UpdaterAddStars" << std::endl;
-    //loop over stars and star monomers and build it up
-    uint32_t gen;
-    uint32_t index_center;
 
-    for(uint32_t i=0;i<(NStar);i++){
+    for(uint32_t i=0;i<NStar;i++)
         addSingleMonomer(1);
+    u_int32_t parentID(0);
+    for(uint32_t i=0;i<NStar;i++){
         for(uint32_t j=0;j<(NBranchPerStar);j++){
             for(uint32_t b=0;b<(NMonoPerBranch);b++){
-                u_int32_t parentID;
                 if (b==0)
-                parentID = (ingredients.getMolecules().size()-NBranchPerStar)
+                    parentID=i;
                 addMonomerToParent(parentID,1);
+                parentID = ingredients.getMolecules().size()-1; 
+
             }
         }
     }
