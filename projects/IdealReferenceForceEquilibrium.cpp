@@ -59,6 +59,10 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE_PM/updater/UpdaterAddStars.h>
 
 
+double probabilityFunction(double n, double p) {
+			return (p*p*n*pow(1-p,n-1.));
+		}
+
 int main(int argc, char* argv[]){
 	try{
 		///////////////////////////////////////////////////////////////////////////////
@@ -170,12 +174,35 @@ int main(int argc, char* argv[]){
 					myIngredients2.modifyMolecules().connect(i,neighbor);
 			}
 		}
+		uint32_t steps(50000);
+		//cummulative distribution function 
+		std::vector<double> CPF((nSegments- nRings)*2,0);
+		//distribution function 
+		std::vector<double>  PF((nSegments- nRings)*2,0);
+
+		double p( (nRings+2. )/( nSegments- nRings - 1.  )  );
+		std::cout << "p=" << p << " n0="<< 1./p<<  std::endl;
+		for (auto i = 0; i < (nSegments- nRings)*2; i++ ){
+			PF[i]=probabilityFunction(i,p);
+			if( i==0 )
+				CPF[i]=PF[i]; 
+			else
+				CPF[i]=CPF[i-1]+PF[i]; 
+		}
+
+		std::vector<uint32_t> invCPF(steps-1,0);
+		for (auto i =1 ; i < steps-1; i++) {
+			uint32_t n=0 ;
+			auto prob=static_cast<double> (i) / static_cast<double>(steps ); 
+			while (  prob > CPF [ n ]  ){ n++;}
+			invCPF[i]=(n-1) + static_cast<uint32_t>(round( (n-(n-1)) *(  prob- CPF[n-1] )/(CPF[n]-CPF[n-1]) ));
+			// std::cout << "invCPF: " <<  prob << " " << invCPF[i] <<" "<< n-1 <<" "<<CPF [ n-1 ]<<" "<< n <<" "<<CPF [ n ]<< std::endl;
+		}
+
         for (auto i=0; i < functionality; i ++) { 
             uint32_t ID(1 + (i+1)*(nSegments+1) -1);
-            // if(gauss == 1 ){
-            //     rng.r250_drand()
-
-            // }
+            if(gauss == 0 )
+				ID = invCPF[rng.r250_rand32() % steps ] +(nSegments +1) *i+1;
             std::cout  << "Fixed monomers= "<< ID <<std::endl;
             myIngredients2.modifyMolecules()[ ID ].setMovableTag(false);  
         }
@@ -184,7 +211,7 @@ int main(int argc, char* argv[]){
 		TaskManager taskmanager2;
 		// taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
 		//read bonds and positions stepwise
-        auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
+        auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold,0.95) ;
         updater->setFilename(feCurve);
         updater->setRelaxationParameter(relaxationParameter);
         auto updater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
