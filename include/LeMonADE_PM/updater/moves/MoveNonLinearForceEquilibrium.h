@@ -169,6 +169,7 @@ private:
                 VectorDouble3 vec(ing.getMolecules()[Neighbors[i].ID].getVector3D()-Neighbors[i].jump-Position);
                 // std::cout <<"MoveNLFE " <<  ing.getMolecules()[Neighbors[i].ID].getVector3D() << " " << Neighbors[i].jump<< " " << Position <<std::endl;
                 force+=EF(vec);
+                //std::cout << this->getIndex()<<" "<< Neighbors[i].ID<< " " <<EF(vec) <<" " << Position << " " << ing.getMolecules()[Neighbors[i].ID].getVector3D()<< std::endl;
             }
             shift=FE(force/(static_cast<double>(number_of_neighbors) ));
         }

@@ -40,8 +40,8 @@ class UpdaterForceBalancedPosition:public AbstractUpdater
 {
 public:
     //! constructor for UpdaterForceBalancedPosition
-    UpdaterForceBalancedPosition(IngredientsType& ing_, double threshold_ ):
-    ing(ing_),threshold(threshold_){};
+    UpdaterForceBalancedPosition(IngredientsType& ing_, double threshold_ , double decreaseFactor_=1.0):
+    ing(ing_),threshold(threshold_),decreaseFactor(decreaseFactor_){};
     
     virtual void initialize(){};
     bool execute();
@@ -61,6 +61,9 @@ private:
     
     //! random number generator 
     RandomNumberGenerators rng;
+
+    //! 
+    double decreaseFactor; 
     
 };
 template <class IngredientsType, class moveType>
@@ -87,6 +90,11 @@ bool UpdaterForceBalancedPosition<IngredientsType,moveType>::execute(){
         ing.modifyMolecules().setAge(ing.getMolecules().getAge()+1);
         if (ing.getMolecules().getAge() %1000 == 0 ){
             std::cout << "MCS: " << ing.getMolecules().getAge() << "  and average shift: " << avShift << std::endl;
+            
+        }
+        if (ing.getMolecules().getAge() %100 == 0 ){
+            setRelaxationParameter(move.getRelaxationParameter()*decreaseFactor);
+            threshold*=decreaseFactor;
         }
     }
     std::cout << "Finish equilibration with average shift per cross link < " << avShift << " after " << ing.getMolecules().getAge()-StartMCS <<std::endl;
