@@ -163,7 +163,7 @@ int main(int argc, char* argv[]){
 		if ( gauss == 0 ){
 			std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) \n";
         	taskmanager2.addUpdater( updater );
-		}else {
+		}else if {gauss == 1 }{
 			std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) \n";
 			taskmanager2.addUpdater( updater2 );
 		}
