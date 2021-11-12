@@ -59,10 +59,9 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE_PM/updater/UpdaterAddStars.h>
 
 
-double probabilityFunction(double n, double p) {
-			return (p*p*n*pow(1-p,n-1.));
-		}
-
+double prob_q(double n, double N, double m) {
+        return (m+1.)/(N-n-1.);
+    }
 int main(int argc, char* argv[]){
 	try{
 		///////////////////////////////////////////////////////////////////////////////
@@ -137,7 +136,7 @@ int main(int argc, char* argv[]){
         myIngredients.modifyBondset().addBFMclassicBondset();
         myIngredients.synchronize();
 		TaskManager taskmanager;
-		taskmanager.addUpdater( new UpdaterAddStars<Ing>(myIngredients,1, nSegments+1 , functionality ),0);
+		taskmanager.addUpdater( new UpdaterAddStars<Ing>(myIngredients,1, 2*nSegments+1 , functionality ),0);
         taskmanager.addAnalyzer(new AnalyzerWriteBfmFile<Ing>("config.bfm", myIngredients, AnalyzerWriteBfmFile<Ing>::APPEND) );
 		taskmanager.initialize();
 		taskmanager.run(1);
@@ -161,7 +160,7 @@ int main(int argc, char* argv[]){
 
         myIngredients2.setNumOfChains              (functionality*1);
 		myIngredients2.setNumOfCrosslinks          (functionality+1);
-		myIngredients2.setNumOfMonomersPerChain    (nSegments);
+		myIngredients2.setNumOfMonomersPerChain    (2*nSegments);
 		myIngredients2.setNumOfMonomersPerCrosslink(1);
 		myIngredients2.setFunctionality            (functionality);
 
@@ -174,22 +173,36 @@ int main(int argc, char* argv[]){
 					myIngredients2.modifyMolecules().connect(i,neighbor);
 			}
 		}
-		uint32_t steps(50000);
-		//cummulative distribution function 
-		std::vector<double> CPF((nSegments- nRings)*2,0);
-		//distribution function 
-		std::vector<double>  PF((nSegments- nRings)*2,0);
-
-		double p( (nRings+2. )/( nSegments- nRings - 1.  )  );
-		std::cout << "p=" << p << " n0="<< 1./p<<  std::endl;
-		for (auto i = 0; i < (nSegments- nRings)*2; i++ ){
-			PF[i]=probabilityFunction(i,p);
-			if( i==0 )
-				CPF[i]=PF[i]; 
-			else
-				CPF[i]=CPF[i-1]+PF[i]; 
+		
+		//probability distribution function 
+        std::cout << "Calculate PDF" << std::endl;
+		std::vector<double>  PF((nSegments-nRings),0);
+        double  sum(0.);
+		for (auto i = 1; i < (nSegments- nRings); i++ ){
+            PF[i]=prob_q(i,nSegments,nRings)*(1.-sum);
+            // std::cout << "probabilityDisti "<<i<< " "<< PF[i]<< std::endl; 
+            sum+=PF[i];
 		}
-
+        //calculate convolution of the probability distributions 
+        //convolution distribution function 
+        std::cout << "Calculate convoluted PDF" << std::endl;
+		std::vector<double>  convPF((nSegments- nRings)*2,0);
+        for (auto i=0; i < 2*(nSegments-nRings);i++){
+            for(auto j=0; j < i ; j++){
+                convPF[i]+=PF[j]*PF[i-j];
+            }
+            // std::cout << "ConvprobabilityDisti "<<i<< " "<< convPF[i]<< std::endl;
+        }
+        //calculate the cummulative distribution function 
+        //cummulative distribution function 
+        std::cout << "Calculate cummulative convoluted PDF" << std::endl;
+		std::vector<double> CPF((nSegments- nRings)*2,0);
+		 for (auto i=1; i < 2*(nSegments-nRings);i++){
+            CPF[i]+=CPF[i-1]+convPF[i];
+        }
+        //calculate the inverse cummulative convoluted probability distribution 
+        std::cout << "Calculate inverse cummulative convoluted PDF" << std::endl;
+        uint32_t steps(50000);
 		std::vector<uint32_t> invCPF(steps-1,0);
 		for (auto i =1 ; i < steps-1; i++) {
 			uint32_t n=0 ;
