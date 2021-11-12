@@ -68,7 +68,7 @@ int main(int argc, char* argv[]){
 		double threshold(0.5);
 		double factor(0.995);
 		double stretching_factor(1.0);
-		bool gauss(false);
+		uint32_t gauss(false);
 		
 		bool showHelp = false;
 		auto parser
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]){
 		if ( gauss == 0 ){
 			std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) \n";
         	taskmanager2.addUpdater( updater );
-		}else if {gauss == 1 }{
+		}else if (gauss == 1 ){
 			std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) \n";
 			taskmanager2.addUpdater( updater2 );
 		}
