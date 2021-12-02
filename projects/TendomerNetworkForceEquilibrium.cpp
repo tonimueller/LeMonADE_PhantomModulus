@@ -69,6 +69,7 @@ int main(int argc, char* argv[]){
 		double factor(0.995);
 		double stretching_factor(1.0);
 		uint32_t gauss(false);
+        double dampingfactor(1.0);
 		
 		bool showHelp = false;
 		auto parser
@@ -80,6 +81,7 @@ int main(int argc, char* argv[]){
 			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"          ] ("(optional) Force-Extension curve. Default \"\"."                             ).required()
 			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"            ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
 			| clara::detail::Opt(               gauss, "gauss"                                           ) ["-g"]["--gauss"            ] ("(optional) Deforma with a Gaussian deformation behaviour. Default 1.0 ."     ).optional()
+            | clara::detail::Opt(       dampingfactor, "damping (=1)"                                    ) ["-d"]["--damping"          ] ("(optional) Damping factor after 1E3MCS. Default 1.0."                        ).optional()
 			| clara::Help( showHelp );
 		
 	    auto result = parser.parse( clara::Args( argc, argv ) );
@@ -96,6 +98,7 @@ int main(int argc, char* argv[]){
 	      std::cout << "outputDataDist        : " << outputDataDist         << std::endl;
 	      std::cout << "inputBFM              : " << inputBFM               << std::endl; 
 	      std::cout << "threshold             : " << threshold              << std::endl; 
+          std::cout << "dampingfactor         : " << dampingfactor          << std::endl;
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
 		  std::cout << "gauss                 : " << gauss                  << std::endl;
 		  std::cout << "stretching_factor     : " << stretching_factor      << std::endl;
@@ -156,10 +159,10 @@ int main(int argc, char* argv[]){
 		TaskManager taskmanager2;
 		taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
 		//read bonds and positions stepwise
-        auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) ;
+        auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold, dampingfactor) ;
         updater->setFilename(feCurve);
         updater->setRelaxationParameter(relaxationParameter);
-        auto updater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) ;
+        auto updater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold,dampingfactor) ;
 		if ( gauss == 0 ){
 			std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) \n";
         	taskmanager2.addUpdater( updater );
