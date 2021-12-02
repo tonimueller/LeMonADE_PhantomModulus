@@ -120,7 +120,7 @@ void FeatureCrosslinkConnectionsLookUpIdealReference::fillTables(IngredientsType
 	uint32_t  nSegments(ingredients.getNumOfMonomersPerChain());
 	for (auto i=0; i < ingredients.getMolecules().size(); i++){
 		if (ingredients.getMolecules()[i].getMovableTag() == false) 
-			NeighborIDs.push_back( neighborX(i, i%(nSegments+1), jumpVector) );
+			NeighborIDs.push_back( neighborX(i, ( (i-1)%((2*nSegments+1)) )+1, jumpVector) );
 
 	}
     

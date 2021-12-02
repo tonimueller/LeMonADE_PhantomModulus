@@ -92,7 +92,7 @@ int main(int argc, char* argv[]){
 			| clara::detail::Opt(               gauss, "gauss"                                           ) ["-g"]["--gauss"            ] ("(optional) Deforma with a Gaussian deformation behaviour. Default 1.0 ."     ).optional()
             | clara::detail::Opt(           nSegments, "nSegments"                                       ) ["-n"]["--nSegments"        ] ("(optional) Number of segments for the strand."                               ).optional()
             | clara::detail::Opt(       functionality, "nStrands"                                        ) ["-s"]["--nStrands"         ] ("(optional) Functionality."                                                   ).optional()
-            | clara::detail::Opt(              nRings, "nRings"                                          ) ["-m"]["--nRings"         ] ("(optional) number of rings."                                                   ).optional()
+            | clara::detail::Opt(              nRings, "nRings"                                          ) ["-m"]["--nRings"           ] ("(optional) number of rings."                                                   ).optional()
 			| clara::Help( showHelp );
 		
 	    auto result = parser.parse( clara::Args( argc, argv ) );
@@ -213,16 +213,16 @@ int main(int argc, char* argv[]){
 		}
 
         for (auto i=0; i < functionality; i ++) { 
-            uint32_t ID(1 + (i+1)*(nSegments+1) -1);
+            uint32_t ID(1 + (i+1)*(2*nSegments+1) -1);
             if(gauss == 0 )
-				ID = invCPF[rng.r250_rand32() % steps ] +(nSegments +1) *i+1;
+				ID = invCPF[rng.r250_rand32() % steps ] +(2*nSegments +1) *i+1;
             std::cout  << "Fixed monomers= "<< ID <<std::endl;
             myIngredients2.modifyMolecules()[ ID ].setMovableTag(false);  
         }
 		myIngredients2.synchronize();
 
 		TaskManager taskmanager2;
-		// taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
+		taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
 		//read bonds and positions stepwise
         auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold,0.95) ;
         updater->setFilename(feCurve);
