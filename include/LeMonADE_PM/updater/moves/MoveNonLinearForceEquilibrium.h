@@ -195,7 +195,7 @@ void MoveNonLinearForceEquilibrium::createTable(){
             std::string line;
             getline(in, line);
             //ignore comments and blank lines 
-            while (line.at(0) == '#' || line.empty() ) //go to next line
+            if (line.at(0) == '#' || line.empty() ) //go to next line
                 continue;
             //read data 
             double force, extension;
