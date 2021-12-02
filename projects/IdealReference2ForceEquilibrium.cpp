@@ -120,7 +120,7 @@ int main(int argc, char* argv[]){
 		///////////////////////////////////////////////////////////////////////////////
 		//Read in th last Config 
 		typedef LOKI_TYPELIST_2(FeatureFixedMonomers,FeatureMoleculesIO) Features;
-		typedef ConfigureSystem<VectorInt3,Features, functionality> Config;
+		typedef ConfigureSystem<VectorInt3,Features, 7> Config;
 		typedef Ingredients<Config> Ing;
 		Ing myIngredients;
         myIngredients.setBoxX(256);
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]){
 		std::cout << "Read in conformation and go on to bring it into equilibrium forces..." <<std::endl;
 		//the foce equilibrium is reached off lattice ( no integer values for the positions )
         typedef LOKI_TYPELIST_3(FeatureBox, FeatureCrosslinkConnectionsLookUpIdealDoubleStarReference ,FeatureFixedMonomers) Features2;
-		typedef ConfigureSystem<VectorDouble3,Features2, functionality> Config2;
+		typedef ConfigureSystem<VectorDouble3,Features2, 7> Config2;
 		typedef Ingredients<Config2> Ing2;
 		Ing2 myIngredients2;
 		

@@ -52,7 +52,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE_PM/updater/moves/MoveNonLinearForceEquilibrium.h>
 #include <LeMonADE_PM/feature/FeatureCrosslinkConnectionsLookUp.h>
 #include <LeMonADE_PM/analyzer/AnalyzerEquilbratedPosition.h>
-
+#include <LeMonADE_PM/updater/UpdaterAffineDeformation.h>
 
 int main(int argc, char* argv[]){
 	try{
@@ -68,18 +68,20 @@ int main(int argc, char* argv[]){
 		double stepwidth(1.0);
 		double minConversion(50.0);
 		bool custom(true);
+        double stretching_factor(1.0);
 		
 		bool showHelp = false;
 		auto parser
-			= clara::detail::Opt(            inputBFM, "inputBFM (=inconfig.bfm)"                        ) ["-i"]["--input"          ] ("(required)Input filename of the bfm file"                                    ).required()
+			= clara::detail::Opt(            inputBFM, "inputBFM (=inconfig.bfm)"                        ) ["-i"]["--input"            ] ("(required)Input filename of the bfm file"                                    ).required()
 			// | clara::detail::Opt(     inputConnection, "inputConnection (=BondCreationBreaking.dat)"     ) ["-d"]["--inputConnection"] ("used for the time development of the topology. "                             ).required()
-			| clara::detail::Opt(       outputDataPos, "outputDataPos (=CrosslinkPosition.dat)"          ) ["-o"]["--outputPos"      ] ("(optional) Output filename of the crosslink ID and the equilibrium Position.").optional()
-			| clara::detail::Opt(      outputDataDist, "outputDataDist (=ChainExtensionDistribution.dat)") ["-c"]["--outputDist"     ] ("(optional) Output filename of the chain extension distribution."             ).optional()
-			| clara::detail::Opt(           stepwidth, "stepwidth"                                       ) ["-s"]["--stepwidth"      ] ("(optional) Width for the increase in percentage. Default: 1%."               ).optional()
-			| clara::detail::Opt(       minConversion, "minConversion"                                   ) ["-u"]["--minConversion"  ] ("(optional) Minimum conversion to be read in. Default: 50%."                  ).optional()
-			| clara::detail::Opt(           threshold, "threshold"                                       ) ["-t"]["--threshold"      ] ("(optional) Threshold of the average shift. Default 0.5 ."                    ).optional()
-			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"        ] ("(optional) Force-Extension curve. Default \"\"."                             ).optional()
-			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"          ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
+			| clara::detail::Opt(       outputDataPos, "outputDataPos (=CrosslinkPosition.dat)"          ) ["-o"]["--outputPos"        ] ("(optional) Output filename of the crosslink ID and the equilibrium Position.").optional()
+			| clara::detail::Opt(      outputDataDist, "outputDataDist (=ChainExtensionDistribution.dat)") ["-c"]["--outputDist"       ] ("(optional) Output filename of the chain extension distribution."             ).optional()
+			| clara::detail::Opt(           stepwidth, "stepwidth"                                       ) ["-s"]["--stepwidth"        ] ("(optional) Width for the increase in percentage. Default: 1%."               ).optional()
+			| clara::detail::Opt(       minConversion, "minConversion"                                   ) ["-u"]["--minConversion"    ] ("(optional) Minimum conversion to be read in. Default: 50%."                  ).optional()
+			| clara::detail::Opt(           threshold, "threshold"                                       ) ["-t"]["--threshold"        ] ("(optional) Threshold of the average shift. Default 0.5 ."                    ).optional()
+            | clara::detail::Opt(   stretching_factor, "stretching_factor (=1)"                          ) ["-l"]["--stretching_factor"] ("(optional) Stretching factor for uniaxial deformation. Default 1.0 ."        ).optional()
+			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"          ] ("(optional) Force-Extension curve. Default \"\"."                             ).optional()
+			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"            ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
 			| clara::Help( showHelp );
 		
 	    auto result = parser.parse( clara::Args( argc, argv ) );
@@ -100,6 +102,7 @@ int main(int argc, char* argv[]){
 	      std::cout << "minConversion         : " << minConversion          << std::endl;
 	      std::cout << "threshold             : " << threshold              << std::endl; 
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
+          std::cout << "stretching_factor     : " << stretching_factor      << std::endl;
 	    }
 		if ( feCurve.empty() ) custom=false;
 		
@@ -156,35 +159,25 @@ int main(int argc, char* argv[]){
 		}
 		myIngredients2.synchronize();
 		
-		
-
-		if(custom){
-			TaskManager taskmanager2;
-			//read bonds and positions stepwise
-			// taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
-			std::cout << "Use custom force-extension curve\n";
-			auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold);
-			forceUpdater->setFilename(feCurve);
-			forceUpdater->setRelaxationParameter(relaxationParameter);	
-			taskmanager2.addUpdater( forceUpdater );
-			taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
-			//initialize and run
-			taskmanager2.initialize();
-			taskmanager2.run(1);
-			taskmanager2.cleanup();
-		} else {
-			TaskManager taskmanager2;
-			//read bonds and positions stepwise
-			// taskmanager2.addUpdater( new UpdaterReadCrosslinkConnections<Ing2>(myIngredients2, inputConnection, stepwidth, minConversion) );
-			std::cout << "Use gaussian force-extension relation\n";
-			auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold);
-			taskmanager2.addUpdater( forceUpdater );
-			taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
-			//initialize and run
-			taskmanager2.initialize();
-			taskmanager2.run(1);
-			taskmanager2.cleanup();
-		}
+        TaskManager taskmanager2;
+        taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
+        //read bonds and positions stepwise
+        auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold);
+        forceUpdater->setFilename(feCurve);
+        forceUpdater->setRelaxationParameter(relaxationParameter);	
+        auto forceUpdater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold);
+        if(custom){
+            std::cout << "Use custom force-extension curve\n";
+            taskmanager2.addUpdater( forceUpdater );
+        }else{
+            std::cout << "Use gaussian force-extension relation\n";
+            taskmanager2.addUpdater( forceUpdater2 );
+        }
+        taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
+        //initialize and run
+        taskmanager2.initialize();
+        taskmanager2.run(1);
+        taskmanager2.cleanup();
 	}
 	catch(std::exception& e){
 		std::cerr<<"Error:\n"
