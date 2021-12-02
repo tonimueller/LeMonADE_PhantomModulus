@@ -22,5 +22,8 @@ target_link_libraries(AnalyzeMolecularWeight LeMonADE )
 add_executable(IdealReferenceForceEquilibrium IdealReferenceForceEquilibrium.cpp)
 target_link_libraries(IdealReferenceForceEquilibrium LeMonADE )
 
+add_executable(IdealReference2ForceEquilibrium IdealReference2ForceEquilibrium.cpp)
+target_link_libraries(IdealReference2ForceEquilibrium LeMonADE )
+
 # add_executable(IntramolecularReactions IntramolecularReactions.cpp)
 # target_link_libraries(IntramolecularReactions LeMonADE CommandlineParser )
