@@ -174,6 +174,7 @@ int main(int argc, char* argv[]){
             taskmanager2.addUpdater( forceUpdater );
         }else{
             std::cout << "Use gaussian force-extension relation\n";
+            taskmanager2.addUpdater( new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, 0.001); );
             taskmanager2.addUpdater( forceUpdater2 );
         }
         taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
