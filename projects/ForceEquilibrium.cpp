@@ -167,7 +167,7 @@ int main(int argc, char* argv[]){
         forceUpdater->setFilename(feCurve);
         forceUpdater->setRelaxationParameter(relaxationParameter);	
         auto forceUpdater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold,dampingfactor);
-        if(custom){
+        if(custom)
             taskmanager2.addUpdater( forceUpdater );
         taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
         //read bonds and positions stepwise
