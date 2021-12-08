@@ -94,7 +94,7 @@ bool UpdaterForceBalancedPosition<IngredientsType,moveType>::execute(){
         }
         if (ing.getMolecules().getAge() %100 == 0 ){
             setRelaxationParameter(move.getRelaxationParameter()*decreaseFactor);
-            threshold*=decreaseFactor;
+            // threshold*=decreaseFactor;
         }
     }
     std::cout << "Finish equilibration with average shift per cross link < " << avShift << " after " << ing.getMolecules().getAge()-StartMCS <<std::endl;
