@@ -167,18 +167,23 @@ int main(int argc, char* argv[]){
         forceUpdater->setFilename(feCurve);
         forceUpdater->setRelaxationParameter(relaxationParameter);	
         auto forceUpdater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold,dampingfactor);
-        if(custom)
-            taskmanager2.addUpdater( forceUpdater );
-        taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
-        //read bonds and positions stepwise
-        if(custom){
-            std::cout << "Use custom force-extension curve\n";
-            taskmanager2.addUpdater( forceUpdater );
-        }else{
-            std::cout << "Use gaussian force-extension relation\n";
-            taskmanager2.addUpdater( forceUpdater2 );
+        
+        for (auto i=1; i < stretching_factor ; i++){
+            if (i>1)
+                taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, static_cast<double>(i)/static_cast<double>(i-1.)) );
+            //read bonds and positions stepwise
+            if(custom){
+                std::cout << "Use custom force-extension curve\n";
+                taskmanager2.addUpdater( forceUpdater );
+            }else{
+                std::cout << "Use gaussian force-extension relation\n";
+                taskmanager2.addUpdater( forceUpdater2 );
+            }
+            std::stringstream out1,out2;
+            out1 << "l" << i << "_" << outputDataPos;
+            out2 << "l" << i << "_" << outputDataDist;
+            taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,out1.str(), out1.str()));
         }
-        taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos, outputDataDist));
         //initialize and run
         taskmanager2.initialize();
         taskmanager2.run(1);
