@@ -182,7 +182,7 @@ int main(int argc, char* argv[]){
             std::stringstream out1,out2;
             out1 << "l" << i << "_" << outputDataPos;
             out2 << "l" << i << "_" << outputDataDist;
-            taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,out1.str(), out1.str()));
+            taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,out1.str(), out2.str()));
         }
         //initialize and run
         taskmanager2.initialize();
