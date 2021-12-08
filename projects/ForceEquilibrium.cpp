@@ -163,15 +163,16 @@ int main(int argc, char* argv[]){
 		myIngredients2.synchronize();
 		
         TaskManager taskmanager2;
-        taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
-        //read bonds and positions stepwise
         auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold,dampingfactor);
         forceUpdater->setFilename(feCurve);
         forceUpdater->setRelaxationParameter(relaxationParameter);	
         auto forceUpdater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold,dampingfactor);
         if(custom){
+            taskmanager2.addUpdater( forceUpdater );
+        taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
+        //read bonds and positions stepwise
+        if(custom){
             std::cout << "Use custom force-extension curve\n";
-            taskmanager2.addUpdater( new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, 0.001) );
             taskmanager2.addUpdater( forceUpdater );
         }else{
             std::cout << "Use gaussian force-extension relation\n";
