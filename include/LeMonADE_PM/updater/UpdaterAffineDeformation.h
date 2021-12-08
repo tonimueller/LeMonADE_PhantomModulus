@@ -52,8 +52,8 @@ public:
                   << "stretching factor in yz = " << stretching_factor_XY << "\n";
     };
     
-    virtual void initialize();
-    virtual bool execute(){return false;};
+    virtual void initialize(){};
+    virtual bool execute();
     virtual void cleanup(){};  
 
 private:
@@ -69,7 +69,7 @@ private:
     }
 };
 template <class IngredientsType>
-void UpdaterAffineDeformation<IngredientsType>::initialize(){
+bool UpdaterAffineDeformation<IngredientsType>::execute(){
     std::cout << "UpdaterAffineDeformation<IngredientsType>::initialize():"<< std::endl;
     //adjusting the box size is not neccessary, because it is used only once in the FeatureCrosslinkConnections*
     //there the jump vectors are calculated
