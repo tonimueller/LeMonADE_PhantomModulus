@@ -56,6 +56,12 @@ public:
     virtual bool execute();
     virtual void cleanup(){};  
 
+    //! setter function for the stretching factor 
+    void setStretchingFactor(double stretching_factor_ ) {
+        stretching_factor=stretching_factor_;
+        stretching_factor_XY = 1./std::sqrt(stretching_factor) ; 
+    }
+
 private:
     //!copy of the main container for the system informations 
     IngredientsType& ing;

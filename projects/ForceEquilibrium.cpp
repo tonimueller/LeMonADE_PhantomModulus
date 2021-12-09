@@ -162,32 +162,45 @@ int main(int argc, char* argv[]){
 		}
 		myIngredients2.synchronize();
 		
-        TaskManager taskmanager2;
+        // TaskManager taskmanager2;
         auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold,dampingfactor);
         forceUpdater->setFilename(feCurve);
         forceUpdater->setRelaxationParameter(relaxationParameter);	
         auto forceUpdater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold,dampingfactor);
-        
+        auto uniaxialDeformation = new UpdaterAffineDeformation<Ing2>(myIngredients2, 1.);
+        auto analyzer = new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos,outputDataDist);
+        forceUpdater->initialize();
+        forceUpdater2->initialize();
+        uniaxialDeformation->initialize();
+        analyzer->initialize();
+
         for (auto i=1; i < stretching_factor ; i++){
-            if (i>1)
-                taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, static_cast<double>(i)/static_cast<double>(i-1.)) );
+            if (i>1){
+                uniaxialDeformation->setStretchingFactor(static_cast<double>(i)/static_cast<double>(i-1.));
+                uniaxialDeformation->execute();
+            }
             //read bonds and positions stepwise
             if(custom){
                 std::cout << "Use custom force-extension curve\n";
-                taskmanager2.addUpdater( forceUpdater );
+                // taskmanager2.addUpdater( forceUpdater );
+                forceUpdater->execute();
             }else{
                 std::cout << "Use gaussian force-extension relation\n";
-                taskmanager2.addUpdater( forceUpdater2 );
+                // taskmanager2.addUpdater( forceUpdater2 );
+                forceUpdater2->execute();
             }
             std::stringstream out1,out2;
-            out1 << "l" << i << "_" << outputDataPos;
+            out1 << "l" << i << "_" << outputDataPos;      
             out2 << "l" << i << "_" << outputDataDist;
-            taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,out1.str(), out2.str()));
+            analyzer->setFilenames(out1.str(), out2.str());
+            analyzer->execute();
+            // taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,out1.str(), out2.str()));
         }
-        //initialize and run
-        taskmanager2.initialize();
-        taskmanager2.run(1);
-        taskmanager2.cleanup();
+        forceUpdater->cleanup();
+        forceUpdater2->cleanup();
+        uniaxialDeformation->cleanup();
+        analyzer->cleanup();
+        // taskmanager2.cleanup();
 	}
 	catch(std::exception& e){
 		std::cerr<<"Error:\n"

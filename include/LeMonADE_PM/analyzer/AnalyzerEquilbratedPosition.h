@@ -76,6 +76,12 @@ public:
 
 	//! just collects the id and the position for the cross links 
 	std::vector<std::vector<double> > CollectAveragePositions();
+
+    //! setter for the filenames
+    void setFilenames(std::string outAvPosBasename_, std::string outDistBasename_ ){
+        outAvPosBasename= outAvPosBasename_;
+        outDistBasename=outDistBasename_;
+    }
 };
 
 /*************************************************************************
