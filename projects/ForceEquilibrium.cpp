@@ -162,7 +162,6 @@ int main(int argc, char* argv[]){
 		}
 		myIngredients2.synchronize();
 		
-        // TaskManager taskmanager2;
         auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold,dampingfactor);
         forceUpdater->setFilename(feCurve);
         forceUpdater->setRelaxationParameter(relaxationParameter);	
@@ -182,11 +181,9 @@ int main(int argc, char* argv[]){
             //read bonds and positions stepwise
             if(custom){
                 std::cout << "Use custom force-extension curve\n";
-                // taskmanager2.addUpdater( forceUpdater );
                 forceUpdater->execute();
             }else{
                 std::cout << "Use gaussian force-extension relation\n";
-                // taskmanager2.addUpdater( forceUpdater2 );
                 forceUpdater2->execute();
             }
             std::stringstream out1,out2;
@@ -194,13 +191,11 @@ int main(int argc, char* argv[]){
             out2 << "l" << i << "_" << outputDataDist;
             analyzer->setFilenames(out1.str(), out2.str());
             analyzer->execute();
-            // taskmanager2.addAnalyzer(new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,out1.str(), out2.str()));
         }
         forceUpdater->cleanup();
         forceUpdater2->cleanup();
         uniaxialDeformation->cleanup();
         analyzer->cleanup();
-        // taskmanager2.cleanup();
 	}
 	catch(std::exception& e){
 		std::cerr<<"Error:\n"
