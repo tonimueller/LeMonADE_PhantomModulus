@@ -70,6 +70,9 @@ int main(int argc, char* argv[]){
 		bool custom(true);
         double stretching_factor(1.0);
         double dampingfactor(1.0);
+		double prestrainFactorX(1.0);
+		double prestrainFactorY(1.0);
+		double prestrainFactorZ(1.0);
 		
 		bool showHelp = false;
 		auto parser
@@ -84,10 +87,13 @@ int main(int argc, char* argv[]){
 			| clara::detail::Opt(             feCurve, "feCurve (="")"                                   ) ["-f"]["--feCurve"          ] ("(optional) Force-Extension curve. Default \"\"."                             ).optional()
 			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"            ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
             | clara::detail::Opt(       dampingfactor, "damping (=1)"                                    ) ["-d"]["--damping"          ] ("(optional) Damping factor after 1E3MCS. Default 1.0."                        ).optional()
+			| clara::detail::Opt(    prestrainFactorX, "prestrainFactorX (=1)"                           ) ["-x"]["--prestrainFactorX" ] ("(optional) Prestrain factor in X. Default 1.0."                              ).optional()
+			| clara::detail::Opt(    prestrainFactorY, "prestrainFactorY (=1)"                           ) ["-y"]["--prestrainFactorY" ] ("(optional) Prestrain factor in Y. Default 1.0."                              ).optional()
+			| clara::detail::Opt(    prestrainFactorZ, "prestrainFactorZ (=1)"                           ) ["-z"]["--prestrainFactorZ" ] ("(optional) Prestrain factor in Z. Default 1.0."                              ).optional()
 			| clara::Help( showHelp );
 		
 	    auto result = parser.parse( clara::Args( argc, argv ) );
-	    
+	    if ( feCurve.empty() ) custom=false;
 	    if( !result ) {
 	      std::cerr << "Error in command line: " << result.errorMessage() << std::endl;
 	      exit(1);
@@ -99,15 +105,18 @@ int main(int argc, char* argv[]){
 	      std::cout << "outputData            : " << outputDataPos          << std::endl;
 	      std::cout << "outputDataDist        : " << outputDataDist         << std::endl;
 	      std::cout << "inputBFM              : " << inputBFM               << std::endl; 
-	    //   std::cout << "inputConnection       : " << inputConnection        << std::endl; 
+	      std::cout << "custom FE             : " << custom                 << std::endl; 
 	      std::cout << "stepwidth             : " << stepwidth              << std::endl;
           std::cout << "dampingfactor         : " << dampingfactor          << std::endl;
 	      std::cout << "minConversion         : " << minConversion          << std::endl;
 	      std::cout << "threshold             : " << threshold              << std::endl; 
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
           std::cout << "stretching_factor     : " << stretching_factor      << std::endl;
+		  std::cout << "prestrainFactorX      : " << prestrainFactorX       << std::endl;
+		  std::cout << "prestrainFactorY      : " << prestrainFactorY       << std::endl;
+		  std::cout << "prestrainFactorZ      : " << prestrainFactorZ       << std::endl;
 	    }
-		if ( feCurve.empty() ) custom=false;
+		
 		
 
 		RandomNumberGenerators rng;
@@ -163,39 +172,58 @@ int main(int argc, char* argv[]){
 		myIngredients2.synchronize();
 		
         auto forceUpdater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold,dampingfactor);
-        forceUpdater->setFilename(feCurve);
+        if(custom)
+            forceUpdater->setFilename(feCurve);
         forceUpdater->setRelaxationParameter(relaxationParameter);	
         auto forceUpdater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold,dampingfactor);
-        auto uniaxialDeformation = new UpdaterAffineDeformation<Ing2>(myIngredients2, 1.);
+        auto uniaxialDeformation = new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor,prestrainFactorX,prestrainFactorY,prestrainFactorZ);
+    
         auto analyzer = new AnalyzerEquilbratedPosition<Ing2>(myIngredients2,outputDataPos,outputDataDist);
-        forceUpdater->initialize();
-        forceUpdater2->initialize();
-        uniaxialDeformation->initialize();
-        analyzer->initialize();
-
-        for (auto i=1; i < stretching_factor ; i++){
-            if (i>1){
-                uniaxialDeformation->setStretchingFactor(static_cast<double>(i)/static_cast<double>(i-1.));
-                uniaxialDeformation->execute();
-            }
-            //read bonds and positions stepwise
-            if(custom){
-                std::cout << "Use custom force-extension curve\n";
-                forceUpdater->execute();
-            }else{
-                std::cout << "Use gaussian force-extension relation\n";
-                forceUpdater2->execute();
-            }
-            std::stringstream out1,out2;
-            out1 << "l" << i << "_" << outputDataPos;      
-            out2 << "l" << i << "_" << outputDataDist;
-            analyzer->setFilenames(out1.str(), out2.str());
-            analyzer->execute();
+		
+        TaskManager taskmanager2;
+        taskmanager2.addUpdater( uniaxialDeformation,0 );
+        //read bonds and positions stepwise
+        if(custom){
+            std::cout << "Use custom force-extension curve\n";
+            taskmanager2.addUpdater( forceUpdater );
+        }else{
+            std::cout << "Use gaussian force-extension relation\n";
+            taskmanager2.addUpdater( forceUpdater2 );
         }
-        forceUpdater->cleanup();
-        forceUpdater2->cleanup();
-        uniaxialDeformation->cleanup();
-        analyzer->cleanup();
+        taskmanager2.addAnalyzer(analyzer);
+        //initialize and run
+		taskmanager2.initialize();
+		taskmanager2.run(1);
+		taskmanager2.cleanup();
+
+        // forceUpdater->initialize();
+        // forceUpdater2->initialize();
+        // uniaxialDeformation->initialize();
+        // analyzer->initialize();
+
+        // for (auto i=1; i < stretching_factor ; i++){
+        //     if (i>1){
+        //         uniaxialDeformation->setStretchingFactor(static_cast<double>(i)/static_cast<double>(i-1.));
+        //         uniaxialDeformation->execute();
+        //     }
+        //     //read bonds and positions stepwise
+        //     if(custom){
+        //         std::cout << "Use custom force-extension curve\n";
+        //         forceUpdater->execute();
+        //     }else{
+        //         std::cout << "Use gaussian force-extension relation\n";
+        //         forceUpdater2->execute();
+        //     }
+        //     std::stringstream out1,out2;
+        //     out1 << "l" << i << "_" << outputDataPos;      
+        //     out2 << "l" << i << "_" << outputDataDist;
+        //     analyzer->setFilenames(out1.str(), out2.str());
+        //     analyzer->execute();
+        // }
+        // forceUpdater->cleanup();
+        // forceUpdater2->cleanup();
+        // uniaxialDeformation->cleanup();
+        // analyzer->cleanup();
 	}
 	catch(std::exception& e){
 		std::cerr<<"Error:\n"

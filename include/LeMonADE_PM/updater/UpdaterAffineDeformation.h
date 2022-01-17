@@ -45,11 +45,20 @@ class UpdaterAffineDeformation:public AbstractUpdater
 {
 public:
     //! constructor for UpdaterAffineDeformation
-    UpdaterAffineDeformation(IngredientsType& ing_, double stretching_factor_ ):
-    ing(ing_),stretching_factor(stretching_factor_),stretching_factor_XY(1./std::sqrt(stretching_factor)){
+    UpdaterAffineDeformation(IngredientsType& ing_, double stretching_factor_, double prestrain_factorX_=1, double prestrain_factorY_=1, double prestrain_factorZ_=1 ):
+    ing(ing_),
+    stretching_factor(stretching_factor_),
+    stretching_factor_XY(1./std::sqrt(stretching_factor)),
+    prestrain_factorX(prestrain_factorX_),
+    prestrain_factorY(prestrain_factorY_),
+    prestrain_factorZ(prestrain_factorZ_)
+    {
         std::cout << "UpdaterAffineDeformation::constructor:\n"
                   << "stretching factor =       " << stretching_factor    << "\n"
-                  << "stretching factor in yz = " << stretching_factor_XY << "\n";
+                  << "stretching factor in yz = " << stretching_factor_XY << "\n"
+                  << "prestrain factor in x = " << prestrain_factorX << "\n"
+                  << "prestrain factor in y = " << prestrain_factorY << "\n"
+                  << "prestrain factor in z = " << prestrain_factorZ << "\n";
     };
     
     virtual void initialize(){};
@@ -69,9 +78,13 @@ private:
     //! threshold for the certainty 
     double stretching_factor;
     double stretching_factor_XY;
+    //! factors for a prestrain or a correction factor for the elastic inbalance in the spatial direction 
+    double prestrain_factorX,prestrain_factorY,prestrain_factorZ;
     VectorDouble3 deform( VectorDouble3 vec ){
 
-        return VectorDouble3(vec.getX()*stretching_factor,vec.getY()*stretching_factor_XY,vec.getZ()*stretching_factor_XY);
+        return VectorDouble3(vec.getX()*stretching_factor   *prestrain_factorX,
+                             vec.getY()*stretching_factor_XY*prestrain_factorY,
+                             vec.getZ()*stretching_factor_XY*prestrain_factorZ);
     }
 };
 template <class IngredientsType>

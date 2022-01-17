@@ -70,6 +70,9 @@ int main(int argc, char* argv[]){
 		double stretching_factor(1.0);
 		uint32_t gauss(false);
         double dampingfactor(1.0);
+		double prestrainFactorX(1.0);
+		double prestrainFactorY(1.0);
+		double prestrainFactorZ(1.0);
 		
 		bool showHelp = false;
 		auto parser
@@ -82,6 +85,9 @@ int main(int argc, char* argv[]){
 			| clara::detail::Opt( relaxationParameter, "relaxationParameter (=10)"                       ) ["-r"]["--relax"            ] ("(optional) Relaxation parameter. Default 10.0 ."                             ).optional()
 			| clara::detail::Opt(               gauss, "gauss"                                           ) ["-g"]["--gauss"            ] ("(optional) Deforma with a Gaussian deformation behaviour. Default 1.0 ."     ).optional()
             | clara::detail::Opt(       dampingfactor, "damping (=1)"                                    ) ["-d"]["--damping"          ] ("(optional) Damping factor after 1E3MCS. Default 1.0."                        ).optional()
+			| clara::detail::Opt(    prestrainFactorX, "prestrainFactorX (=1)"                           ) ["-x"]["--prestrainFactorX" ] ("(optional) Prestrain factor in X. Default 1.0."                              ).optional()
+			| clara::detail::Opt(    prestrainFactorY, "prestrainFactorY (=1)"                           ) ["-y"]["--prestrainFactorY" ] ("(optional) Prestrain factor in Y. Default 1.0."                              ).optional()
+			| clara::detail::Opt(    prestrainFactorZ, "prestrainFactorZ (=1)"                           ) ["-z"]["--prestrainFactorZ" ] ("(optional) Prestrain factor in Z. Default 1.0."                              ).optional()
 			| clara::Help( showHelp );
 		
 	    auto result = parser.parse( clara::Args( argc, argv ) );
@@ -102,6 +108,9 @@ int main(int argc, char* argv[]){
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
 		  std::cout << "gauss                 : " << gauss                  << std::endl;
 		  std::cout << "stretching_factor     : " << stretching_factor      << std::endl;
+		  std::cout << "prestrainFactorX      : " << prestrainFactorX       << std::endl;
+		  std::cout << "prestrainFactorY      : " << prestrainFactorY       << std::endl;
+		  std::cout << "prestrainFactorZ      : " << prestrainFactorZ       << std::endl;
 	    }
 		RandomNumberGenerators rng;
 		// rng.seedDefaultValuesAll();
@@ -157,14 +166,14 @@ int main(int argc, char* argv[]){
 		myIngredients2.synchronize();
 
 		TaskManager taskmanager2;
-		taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor),0 );
+		taskmanager2.addUpdater( new UpdaterAffineDeformation<Ing2>(myIngredients2, stretching_factor,prestrainFactorX,prestrainFactorY,prestrainFactorZ),0 );
 		//read bonds and positions stepwise
         auto updater = new UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold, dampingfactor) ;
-        updater->setFilename(feCurve);
-        updater->setRelaxationParameter(relaxationParameter);
         auto updater2 = new UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold,dampingfactor) ;
 		if ( gauss == 0 ){
-			std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) \n";
+            updater->setFilename(feCurve);
+            updater->setRelaxationParameter(relaxationParameter);
+            std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveNonLinearForceEquilibrium>(myIngredients2, threshold) \n";
         	taskmanager2.addUpdater( updater );
 		}else if (gauss == 1 ){
 			std::cout << "TendomerNetworkForceEquilibrium: add UpdaterForceBalancedPosition<Ing2,MoveForceEquilibrium>(myIngredients2, threshold) \n";
