@@ -85,9 +85,9 @@ int main(int argc, char* argv[]){
 	      exit(0);
 	    }else{
 	      std::cout << "outputBFM             : " << outputBFM          << std::endl;
-	      std::cout << "inputBFM              : " << inputBFM               << std::endl; 
-	      std::cout << "inputConnection       : " << inputConnection        << std::endl; 
-          std::cout << "activeComponent       : " << activeComponent        << std::endl; 
+	      std::cout << "inputBFM              : " << inputBFM           << std::endl; 
+	      std::cout << "inputConnection       : " << inputConnection    << std::endl; 
+          std::cout << "activeComponent       : " << activeComponent    << std::endl; 
 	    }
 		RandomNumberGenerators rng;
 		rng.seedAll();

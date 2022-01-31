@@ -97,13 +97,12 @@ int main(int argc, char* argv[]){
 	      std::cerr << "Error in command line: " << result.errorMessage() << std::endl;
 	      exit(1);
 	    }else if(showHelp == true){
-	    //   std::cout << "Simulator to connect linear chains with single monomers of certain functionality"<< std::endl;
+	      std::cout << "Force equilibration of two a double star, where each chain is replaced effectively by a tendomer."<< std::endl;
 	      parser.writeToStream(std::cout);
 	      exit(0);
 	    }else{
 	      std::cout << "outputData            : " << outputDataPos          << std::endl;
 	      std::cout << "outputDataDist        : " << outputDataDist         << std::endl;
-	    //   std::cout << "inputBFM              : " << inputBFM               << std::endl; 
 	      std::cout << "threshold             : " << threshold              << std::endl; 
 		  std::cout << "feCurve               : " << feCurve                << std::endl;
 		  std::cout << "gauss                 : " << gauss                  << std::endl;

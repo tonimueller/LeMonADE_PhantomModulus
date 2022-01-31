@@ -98,7 +98,7 @@ int main(int argc, char* argv[]){
 	      std::cerr << "Error in command line: " << result.errorMessage() << std::endl;
 	      exit(1);
 	    }else if(showHelp == true){
-	      std::cout << "Simulator to connect linear chains with single monomers of certain functionality"<< std::endl;
+	      std::cout << "Standard force equilibration for a end-linked network."<< std::endl;
 	      parser.writeToStream(std::cout);
 	      exit(0);
 	    }else{
@@ -195,35 +195,6 @@ int main(int argc, char* argv[]){
 		taskmanager2.initialize();
 		taskmanager2.run(1);
 		taskmanager2.cleanup();
-
-        // forceUpdater->initialize();
-        // forceUpdater2->initialize();
-        // uniaxialDeformation->initialize();
-        // analyzer->initialize();
-
-        // for (auto i=1; i < stretching_factor ; i++){
-        //     if (i>1){
-        //         uniaxialDeformation->setStretchingFactor(static_cast<double>(i)/static_cast<double>(i-1.));
-        //         uniaxialDeformation->execute();
-        //     }
-        //     //read bonds and positions stepwise
-        //     if(custom){
-        //         std::cout << "Use custom force-extension curve\n";
-        //         forceUpdater->execute();
-        //     }else{
-        //         std::cout << "Use gaussian force-extension relation\n";
-        //         forceUpdater2->execute();
-        //     }
-        //     std::stringstream out1,out2;
-        //     out1 << "l" << i << "_" << outputDataPos;      
-        //     out2 << "l" << i << "_" << outputDataDist;
-        //     analyzer->setFilenames(out1.str(), out2.str());
-        //     analyzer->execute();
-        // }
-        // forceUpdater->cleanup();
-        // forceUpdater2->cleanup();
-        // uniaxialDeformation->cleanup();
-        // analyzer->cleanup();
 	}
 	catch(std::exception& e){
 		std::cerr<<"Error:\n"

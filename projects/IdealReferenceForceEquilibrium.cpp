@@ -98,23 +98,22 @@ int main(int argc, char* argv[]){
 	    auto result = parser.parse( clara::Args( argc, argv ) );
 	    
 	    if( !result ) {
-	      std::cerr << "Error in command line: " << result.errorMessage() << std::endl;
-	      exit(1);
+			std::cerr << "Error in command line: " << result.errorMessage() << std::endl;
+			exit(1);
 	    }else if(showHelp == true){
-	    //   std::cout << "Simulator to connect linear chains with single monomers of certain functionality"<< std::endl;
-	      parser.writeToStream(std::cout);
-	      exit(0);
+	    	std::cout << "Force equilibration of a star, where each chain is replaced effectively by a tendomer."<< std::endl;
+	      	parser.writeToStream(std::cout);
+	      	exit(0);
 	    }else{
-	      std::cout << "outputData            : " << outputDataPos          << std::endl;
-	      std::cout << "outputDataDist        : " << outputDataDist         << std::endl;
-	    //   std::cout << "inputBFM              : " << inputBFM               << std::endl; 
-	      std::cout << "threshold             : " << threshold              << std::endl; 
-		  std::cout << "feCurve               : " << feCurve                << std::endl;
-		  std::cout << "gauss                 : " << gauss                  << std::endl;
-		  std::cout << "stretching_factor     : " << stretching_factor      << std::endl;
-          std::cout << "nSegments             : " << nSegments              << std::endl;
-          std::cout << "functionality         : " << functionality          << std::endl;
-          std::cout << "nRings                : " << nRings          << std::endl;
+			std::cout << "outputData            : " << outputDataPos          << std::endl;
+			std::cout << "outputDataDist        : " << outputDataDist         << std::endl;
+			std::cout << "threshold             : " << threshold              << std::endl; 
+			std::cout << "feCurve               : " << feCurve                << std::endl;
+			std::cout << "gauss                 : " << gauss                  << std::endl;
+			std::cout << "stretching_factor     : " << stretching_factor      << std::endl;
+			std::cout << "nSegments             : " << nSegments              << std::endl;
+			std::cout << "functionality         : " << functionality          << std::endl;
+			std::cout << "nRings                : " << nRings          << std::endl;
 	    }
 		RandomNumberGenerators rng;
 		// rng.seedDefaultValuesAll();
